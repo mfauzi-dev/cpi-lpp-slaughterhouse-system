@@ -60,7 +60,7 @@ class ProductivityController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'production_batch_id' => [
                 'required',
                 'integer',
@@ -76,13 +76,29 @@ class ProductivityController extends Controller
             'worker_total' => ['required', 'integer', 'min:0'],
             'total_weight' => ['required', 'numeric', 'min:0'],
             'total_time' => ['required', 'numeric', 'min:0'],
-            'productivity_indirect' => ['required', 'numeric', 'min:0'],
-            'productivity_direct' => ['required', 'numeric', 'min:0'],
         ]);
 
+        $productivityIndirect = ($request->total_time > 0 && $request->worker_total > 0)
+            ? $request->total_weight / $request->total_time / $request->worker_total
+            : 0;
+
+        $productivityDirect = ($request->total_time > 0 && $request->worker_direct > 0)
+            ? $request->total_weight / $request->total_time / $request->worker_direct
+            : 0;
+
         try {
-            DB::transaction(function () use ($validated) {
-                Productivity::create($validated);
+            DB::transaction(function () use ($request, $productivityIndirect, $productivityDirect) {
+                Productivity::create([
+                    'production_batch_id' => $request->production_batch_id,
+                    'material_id' => $request->material_id,
+                    'worker_indirect' => $request->worker_indirect,
+                    'worker_direct' => $request->worker_direct,
+                    'worker_total' => $request->worker_total,
+                    'total_weight' => $request->total_weight,
+                    'total_time' => $request->total_time,
+                    'productivity_indirect' => $productivityIndirect,
+                    'productivity_direct' => $productivityDirect,
+                ]);
             });
 
             return redirect()
@@ -125,7 +141,7 @@ class ProductivityController extends Controller
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
+        $request->validate([
             'production_batch_id' => [
                 'required',
                 'integer',
@@ -141,12 +157,28 @@ class ProductivityController extends Controller
             'worker_total' => ['required', 'integer', 'min:0'],
             'total_weight' => ['required', 'numeric', 'min:0'],
             'total_time' => ['required', 'numeric', 'min:0'],
-            'productivity_indirect' => ['required', 'numeric', 'min:0'],
-            'productivity_direct' => ['required', 'numeric', 'min:0'],
         ]);
 
+        $productivityIndirect = ($request->total_time > 0 && $request->worker_total > 0)
+            ? $request->total_weight / $request->total_time / $request->worker_total
+            : 0;
+
+        $productivityDirect = ($request->total_time > 0 && $request->worker_direct > 0)
+            ? $request->total_weight / $request->total_time / $request->worker_direct
+            : 0;
+
         $productivity = Productivity::findOrFail($id);
-        $productivity->update($validated);
+        $productivity->update([
+            'production_batch_id' => $request->production_batch_id,
+            'material_id' => $request->material_id,
+            'worker_indirect' => $request->worker_indirect,
+            'worker_direct' => $request->worker_direct,
+            'worker_total' => $request->worker_total,
+            'total_weight' => $request->total_weight,
+            'total_time' => $request->total_time,
+            'productivity_indirect' => $productivityIndirect,
+            'productivity_direct' => $productivityDirect,
+        ]);
 
         return redirect()
             ->route('operator.productivity.index')

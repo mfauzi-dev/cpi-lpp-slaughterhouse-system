@@ -242,7 +242,10 @@
                                         id="productivity_indirect"
                                         class="form-control @error('productivity_indirect') is-invalid @enderror"
                                         value="{{ old('productivity_indirect', $productivity->productivity_indirect) }}"
-                                        placeholder="Masukkan productivity indirect">
+                                        placeholder="0.00" readonly>
+                                    <small class="form-text text-muted">
+                                        Otomatis dihitung: Total Weight / Total Time / Worker Total
+                                    </small>
                                     @error('productivity_indirect')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -256,7 +259,10 @@
                                         id="productivity_direct"
                                         class="form-control @error('productivity_direct') is-invalid @enderror"
                                         value="{{ old('productivity_direct', $productivity->productivity_direct) }}"
-                                        placeholder="Masukkan productivity direct">
+                                        placeholder="0.00" readonly>
+                                    <small class="form-text text-muted">
+                                        Otomatis dihitung: Total Weight / Total Time / Worker Direct
+                                    </small>
                                     @error('productivity_direct')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -321,6 +327,28 @@
                     $('#info_total_kg').text('-');
                 }
             });
+
+            // Auto-calculate productivity_indirect & productivity_direct
+            function calculateProductivity() {
+                const totalWeight = parseFloat($('#total_weight').val()) || 0;
+                const totalTime = parseFloat($('#total_time').val()) || 0;
+                const workerTotal = parseFloat($('#worker_total').val()) || 0;
+                const workerDirect = parseFloat($('#worker_direct').val()) || 0;
+
+                const productivityIndirect = (totalTime > 0 && workerTotal > 0)
+                    ? (totalWeight / totalTime / workerTotal)
+                    : 0;
+
+                const productivityDirect = (totalTime > 0 && workerDirect > 0)
+                    ? (totalWeight / totalTime / workerDirect)
+                    : 0;
+
+                $('#productivity_indirect').val(productivityIndirect.toFixed(2));
+                $('#productivity_direct').val(productivityDirect.toFixed(2));
+            }
+
+            $('#total_weight, #total_time, #worker_total, #worker_direct').on('input',
+                calculateProductivity);
         });
     </script>
 @endpush
