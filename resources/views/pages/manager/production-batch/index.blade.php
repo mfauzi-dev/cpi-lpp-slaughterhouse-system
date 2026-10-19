@@ -72,7 +72,7 @@
                                 <label class="filter-label">Cost Center Name</label>
                                 <select name="cost_center_name" class="form-control">
                                     <option value="">Semua Cost Center</option>
-                                    @foreach (['FCHO', 'FCHS', 'FCHM', 'FCHT', 'FCHR'] as $costCenter)
+                                    @foreach (['FCHO', 'FCHS', 'FCHM', 'FCHT', 'FCHR', 'FCH1', 'FCH2', 'FCH3', 'FCH4', 'FCH5'] as $costCenter)
                                         <option value="{{ $costCenter }}"
                                             {{ request('cost_center_name') == $costCenter ? 'selected' : '' }}>
                                             {{ $costCenter }}
