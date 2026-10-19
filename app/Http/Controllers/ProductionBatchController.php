@@ -146,7 +146,7 @@ class ProductionBatchController extends Controller
             'cost_center_name' => [
                 'nullable',
                 'string',
-                'in:FCHO,FCHS,FCHM,FCHT,FCHR',
+                'in:FCHO,FCHS,FCHM,FCHT,FCHR,FCH1,FCH2,FCH3,FCH4,FCH5',
             ],
             'no_po' => ['nullable', 'string', 'max:255'],
         ]);
@@ -194,7 +194,7 @@ class ProductionBatchController extends Controller
             'cost_center_name' => [
                 'nullable',
                 'string',
-                'in:FCHO,FCHS,FCHM,FCHT,FCHR',
+                'in:FCHO,FCHS,FCHM,FCHT,FCHR,FCH1,FCH2,FCH3,FCH4,FCH5',
             ],
             'no_po' => ['nullable', 'string', 'max:255'],
         ]);

@@ -557,6 +557,15 @@
 
                                 <div class="col-md-3 mb-3">
                                     <div class="process-card">
+                                        <div class="process-label">Yield</div>
+                                        <div class="process-value">
+                                            {{ $dataHasil->total_kg !== null ? number_format((float) $dataHasil->yield_persen, 0, ',', '.') . ' %' : '-' }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3 mb-3">
+                                    <div class="process-card">
                                         <div class="process-label">Loss</div>
                                         <div
                                             class="process-value {{ $dataHasil->loss_persen !== null && (float) $dataHasil->loss_persen > 0 ? 'text-alert' : '' }}">

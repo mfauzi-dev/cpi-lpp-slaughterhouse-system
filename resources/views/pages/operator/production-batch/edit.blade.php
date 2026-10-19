@@ -115,7 +115,7 @@
                                     <select name="cost_center_name"
                                         class="form-control @error('cost_center_name') is-invalid @enderror">
                                         <option value="">Pilih Cost Center</option>
-                                        @foreach (['FCHO', 'FCHS', 'FCHM', 'FCHT', 'FCHR'] as $costCenter)
+                                        @foreach (['FCHO', 'FCHS', 'FCHM', 'FCHT', 'FCHR', 'FCH1', 'FCH2', 'FCH3', 'FCH4', 'FCH5'] as $costCenter)
                                             <option value="{{ $costCenter }}"
                                                 {{ old('cost_center_name', $productionBatch->cost_center_name) == $costCenter ? 'selected' : '' }}>
                                                 {{ $costCenter }}

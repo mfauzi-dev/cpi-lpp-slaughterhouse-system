@@ -252,6 +252,71 @@
                 <div class="card mb-4">
                     <div class="card-header">
                         <h4>
+                            <i class="fas fa-calculator mr-1"></i>
+                            Perhitungan Yield
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="section-info mb-3">
+                            <i class="fas fa-info-circle"></i>
+                            Pilih bahan baku dari production batch ini untuk menentukan Jumlah KG sebagai pembagi
+                            yield. Field RM pada bagian Detail Hasil Produksi diisi manual dan tidak terpengaruh oleh
+                            pilihan ini.
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bahan_baku_pilihan">Pilih Bahan Baku (untuk Jumlah KG)</label>
+                            <select id="bahan_baku_pilihan" class="form-control select2" disabled>
+                                <option value="">Pilih production batch terlebih dahulu</option>
+                            </select>
+                        </div>
+
+                        <input type="hidden" name="jumlah_kg_bahan_baku" id="jumlah_kg_bahan_baku"
+                            value="{{ old('jumlah_kg_bahan_baku') }}">
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-0">
+                                    <label for="preview_jumlah_kg">Jumlah KG (Bahan Baku Terpilih)</label>
+                                    <input type="text" id="preview_jumlah_kg" class="form-control"
+                                        value="0,00" readonly>
+                                    <small class="form-text text-muted">
+                                        Diambil dari Jumlah KG bahan baku yang dipilih.
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-0">
+                                    <label for="preview_hasil_finish_good">Hasil Finish Good (KG)</label>
+                                    <input type="text" id="preview_hasil_finish_good" class="form-control"
+                                        value="0,00" readonly>
+                                    <small class="form-text text-muted">
+                                        Mengikuti nilai Total KG pada bagian atas.
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-0">
+                                    <label for="preview_yield_persen">Yield (%)</label>
+                                    <div class="input-group">
+                                        <input type="text" id="preview_yield_persen" class="form-control"
+                                            value="0,00" readonly>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        (Hasil Finish Good ÷ Jumlah KG) × 100.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>
                             <span class="step-badge">4</span>
                             Pengecekan Suhu
                         </h4>
@@ -365,13 +430,95 @@
                 return `${parts[2]}/${parts[1]}/${parts[0]}`;
             }
 
+            // ====================== Perhitungan Yield (terpisah dari RM manual) ======================
+            function recalculatePreview() {
+                const hasilFinishGood = parseFloat($('#total_kg').val()) || 0;
+                const jumlahKg = parseFloat($('#jumlah_kg_bahan_baku').val()) || 0;
+
+                $('#preview_hasil_finish_good').val(
+                    hasilFinishGood.toLocaleString('id-ID', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })
+                );
+
+                $('#preview_jumlah_kg').val(
+                    jumlahKg.toLocaleString('id-ID', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })
+                );
+
+                const yieldPersen = jumlahKg > 0 ? (hasilFinishGood / jumlahKg) * 100 : 0;
+
+                $('#preview_yield_persen').val(
+                    yieldPersen.toLocaleString('id-ID', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })
+                );
+            }
+
+            $('#total_kg').on('input', recalculatePreview);
+
+            function populateBahanBakuPilihan(bahanBakus) {
+                const select = $('#bahan_baku_pilihan');
+
+                select.empty().append('<option value="">Pilih Bahan Baku</option>');
+
+                if (!bahanBakus || !bahanBakus.length) {
+                    select
+                        .append('<option value="">Tidak ada data bahan baku pada batch ini</option>')
+                        .prop('disabled', true)
+                        .trigger('change.select2');
+                    return;
+                }
+
+                bahanBakus.forEach(function(item) {
+                    const kode = item.material?.material_code ?? '-';
+                    const nama = item.material?.material_description ?? '-';
+                    const beratKg = Number(item.jumlah_kg || 0).toLocaleString('id-ID', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+
+                    const option = new Option(`${kode} - ${nama} (${beratKg} KG)`, item.id);
+                    $(option).attr('data-jumlah-kg', item.jumlah_kg);
+
+                    select.append(option);
+                });
+
+                select.prop('disabled', false).trigger('change.select2');
+            }
+
+            // pilih bahan baku -> isi hidden input #jumlah_kg_bahan_baku (BUKAN #rm)
+            $('#bahan_baku_pilihan').on('change', function() {
+                const jumlahKg = $(this).find(':selected').attr('data-jumlah-kg');
+                $('#jumlah_kg_bahan_baku').val(jumlahKg || '');
+                recalculatePreview();
+            });
+            // ====================== END ======================
+
             function updateProductionInfo() {
                 const selected = $('#production_batch_id').find(':selected');
                 const batchId = $('#production_batch_id').val();
 
                 resetProductionInfo();
 
+                $('#bahan_baku_pilihan')
+                    .empty()
+                    .append('<option value="">Memuat bahan baku...</option>')
+                    .prop('disabled', true)
+                    .trigger('change.select2');
+
+                $('#jumlah_kg_bahan_baku').val('');
+                recalculatePreview();
+
                 if (!batchId) {
+                    $('#bahan_baku_pilihan')
+                        .empty()
+                        .append('<option value="">Pilih production batch terlebih dahulu</option>')
+                        .trigger('change.select2');
                     return;
                 }
 
@@ -406,10 +553,13 @@
                                 maximumFractionDigits: 2
                             }) + ' KG'
                         );
+
+                        populateBahanBakuPilihan(response.bahan_bakus);
                     },
                     error: function() {
                         $('#info_jumlah_produk').text('-');
                         $('#info_total_kg').text('-');
+                        populateBahanBakuPilihan([]);
                     }
                 });
             }
@@ -499,6 +649,8 @@
             if (oldTanggal) {
                 $('#tanggal_produksi').val(oldTanggal).trigger('change');
             }
+
+            recalculatePreview();
         });
     </script>
 @endpush

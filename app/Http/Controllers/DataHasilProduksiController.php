@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BahanBaku;
 use App\Models\DataHasilProduksi;
 use App\Models\Material;
 use App\Models\ProductionBatch;
@@ -77,6 +78,10 @@ class DataHasilProduksiController extends Controller
         $production = ProductionBatch::withCount('bahanBakus')
             ->withSum('bahanBakus', 'jumlah_kg')
             ->findOrFail($request->production_batch_id);
+        
+        $bahanBakus = BahanBaku::with('material:id,material_code,material_description')
+            ->where('production_batch_id', $production->id)
+            ->get(['id', 'material_id', 'jumlah_bag', 'jumlah_kg']);
 
         return response()->json([
             'id' => $production->id,
@@ -88,6 +93,7 @@ class DataHasilProduksiController extends Controller
             'tanggal_proses' => $production->tanggal_proses?->format('Y-m-d'),
             'jumlah_produk' => $production->bahan_bakus_count,
             'total_kg' => $production->bahan_bakus_sum_jumlah_kg ?? 0,
+            'bahan_bakus' => $bahanBakus,
         ]);
     }
 
@@ -118,10 +124,18 @@ class DataHasilProduksiController extends Controller
             'pengecekan_suhu_suhu' => ['nullable', 'numeric'],
             'packaging_nama_kemasan' => ['nullable', 'string', 'max:255'],
             'packaging_jumlah_kg' => ['nullable', 'numeric', 'min:0'],
+            'jumlah_kg_bahan_baku' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         try {
             DB::transaction(function () use ($request) {
+                $totalKg = $request->total_kg ?? 0;
+                $jumlahKgBahanBaku = $request->jumlah_kg_bahan_baku ?? 0;
+
+                $yieldPersen = $jumlahKgBahanBaku > 0
+                    ? round(($totalKg / $jumlahKgBahanBaku) * 100, 2)
+                    : 0;
+                
                 DataHasilProduksi::create([
                     'production_batch_id' => $request->production_batch_id,
                     'material_id' => $request->material_id,
@@ -131,6 +145,7 @@ class DataHasilProduksiController extends Controller
                     'rm' => $request->rm ?? 0,
                     'total_bag' => $request->total_bag ?? 0,
                     'total_kg' => $request->total_kg ?? 0,
+                    'yield_persen' => $yieldPersen,
                     'loss_kg' => $request->loss_kg ?? 0,
                     'loss_persen' => $request->loss_persen ?? 0,
                     'pickup_kg' => $request->pickup_kg ?? 0,
@@ -211,9 +226,17 @@ class DataHasilProduksiController extends Controller
             'pengecekan_suhu_suhu' => ['nullable', 'numeric'],
             'packaging_nama_kemasan' => ['nullable', 'string', 'max:255'],
             'packaging_jumlah_kg' => ['nullable', 'numeric', 'min:0'],
+            'jumlah_kg_bahan_baku' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $hasilProduksi = DataHasilProduksi::findOrFail($id);
+
+        $totalKg = $request->total_kg ?? 0;
+        $jumlahKgBahanBaku = $request->jumlah_kg_bahan_baku ?? 0;
+
+        $yieldPersen = $jumlahKgBahanBaku > 0
+            ? round(($totalKg / $jumlahKgBahanBaku) * 100, 2)
+            : 0;
 
         $hasilProduksi->update([
             'production_batch_id' => $request->production_batch_id,
@@ -224,6 +247,7 @@ class DataHasilProduksiController extends Controller
             'rm' => $request->rm ?? 0,
             'total_bag' => $request->total_bag ?? 0,
             'total_kg' => $request->total_kg ?? 0,
+            'yield_persen' => $yieldPersen,
             'loss_kg' => $request->loss_kg ?? 0,
             'loss_persen' => $request->loss_persen ?? 0,
             'pickup_kg' => $request->pickup_kg ?? 0,
