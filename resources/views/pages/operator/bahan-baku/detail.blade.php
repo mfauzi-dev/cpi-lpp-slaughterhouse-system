@@ -131,101 +131,104 @@
                 <div class="card-body">
                     <form id="bulkDeleteForm" action="{{ route('operator.bahan-baku.bulk-destroy') }}" method="POST">
                         @csrf
-
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-wide">
-                                <thead>
-                                    <tr>
-                                        <th width="50" class="text-center">
-                                            <input type="checkbox" id="checkAll">
-                                        </th>
-                                        <th width="60" class="text-center">No</th>
-                                        <th>Nama Produk</th>
-                                        <th>Jumlah Bag</th>
-                                        <th>Berat (KG)</th>
-                                        <th width="100" class="text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @forelse ($production->bahanBakus as $index => $bahanBaku)
-                                        <tr>
-                                            <td class="text-center align-middle">
-                                                <input type="checkbox" name="ids[]" value="{{ $bahanBaku->id }}"
-                                                    class="detail-checkbox">
-                                            </td>
-
-                                            <td class="text-center font-weight-bold">
-                                                {{ $index + 1 }}
-                                            </td>
-
-                                            <td>
-                                                <div class="font-weight-bold">
-                                                    {{ $bahanBaku->material->material_description ?? '-' }}
-                                                </div>
-                                                @if ($bahanBaku->material && $bahanBaku->material->material_code)
-                                                    <small class="text-muted">
-                                                        {{ $bahanBaku->material->material_code }}
-                                                    </small>
-                                                @endif
-                                            </td>
-
-                                            <td>
-                                                {{ number_format($bahanBaku->jumlah_bag ?? 0, 0, ',', '.') }}
-                                            </td>
-
-                                            <td>
-                                                <strong>
-                                                    {{ number_format($bahanBaku->jumlah_kg ?? 0, 2, ',', '.') }}
-                                                </strong>
-                                                KG
-                                            </td>
-
-                                            <td class="text-center">
-                                                <div class="action-buttons">
-                                                    <form
-                                                        action="{{ route('operator.bahan-baku.destroy', $bahanBaku->id) }}"
-                                                        method="POST" class="d-inline"
-                                                        onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-                                                        @csrf
-                                                        @method('DELETE')
-
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                            title="Hapus">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="6">
-                                                <div class="empty-state">
-                                                    <i class="fas fa-box-open d-block"></i>
-                                                    <div>Belum ada data produk.</div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-
-                                @if ($production->bahanBakus->isNotEmpty())
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="4" class="text-right font-weight-bold">
-                                                Total Bahan Baku
-                                            </td>
-                                            <td colspan="2" class="font-weight-bold">
-                                                {{ number_format($production->bahanBakus->sum('jumlah_kg'), 2, ',', '.') }}
-                                                KG
-                                            </td>
-                                        </tr>
-                                    </tfoot>
-                                @endif
-                            </table>
-                        </div>
                     </form>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-wide">
+                            <thead>
+                                <tr>
+                                    <th width="50" class="text-center">
+                                        <input type="checkbox" id="checkAll">
+                                    </th>
+                                    <th width="60" class="text-center">No</th>
+                                    <th>Nama Produk</th>
+                                    <th>Jumlah Bag</th>
+                                    <th>Berat (KG)</th>
+                                    <th width="100" class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @forelse ($production->bahanBakus as $index => $bahanBaku)
+                                    <tr>
+                                        <td class="text-center align-middle">
+                                            <input
+                                                type="checkbox"
+                                                name="ids[]"
+                                                value="{{ $bahanBaku->id }}"
+                                                class="detail-checkbox"
+                                                form="bulkDeleteForm">
+                                        </td>
+
+                                        <td class="text-center font-weight-bold">
+                                            {{ $index + 1 }}
+                                        </td>
+
+                                        <td>
+                                            <div class="font-weight-bold">
+                                                {{ $bahanBaku->material->material_description ?? '-' }}
+                                            </div>
+                                            @if ($bahanBaku->material && $bahanBaku->material->material_code)
+                                                <small class="text-muted">
+                                                    {{ $bahanBaku->material->material_code }}
+                                                </small>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            {{ number_format($bahanBaku->jumlah_bag ?? 0, 0, ',', '.') }}
+                                        </td>
+
+                                        <td>
+                                            <strong>
+                                                {{ number_format($bahanBaku->jumlah_kg ?? 0, 2, ',', '.') }}
+                                            </strong>
+                                            KG
+                                        </td>
+
+                                        <td class="text-center">
+                                            <div class="action-buttons">
+                                                <form
+                                                    action="{{ route('operator.bahan-baku.destroy', $bahanBaku->id) }}"
+                                                    method="POST"
+                                                    class="d-inline"
+                                                    onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6">
+                                            <div class="empty-state">
+                                                <i class="fas fa-box-open d-block"></i>
+                                                <div>Belum ada data produk.</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+
+                            @if ($production->bahanBakus->isNotEmpty())
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4" class="text-right font-weight-bold">
+                                            Total Bahan Baku
+                                        </td>
+                                        <td colspan="2" class="font-weight-bold">
+                                            {{ number_format($production->bahanBakus->sum('jumlah_kg'), 2, ',', '.') }} KG
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            @endif
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -246,14 +249,17 @@
                             </a>
 
                             @if ($production->bahanBakus->isNotEmpty())
-                                <a href="{{ route('operator.bahan-baku.edit', $production->id) }}"
-                                    class="btn btn-primary mr-1">
+                                <a href="{{ route('operator.bahan-baku.edit', $production->id) }}" class="btn btn-primary mr-1">
                                     <i class="fas fa-edit mr-1"></i>
                                     Edit
                                 </a>
                             @endif
 
-                            <button type="submit" form="bulkDeleteForm" id="btnBulkDelete" class="btn btn-danger"
+                            <button
+                                type="submit"
+                                form="bulkDeleteForm"
+                                id="btnBulkDelete"
+                                class="btn btn-danger"
                                 disabled>
                                 <i class="fas fa-trash mr-1"></i>
                                 Hapus Terpilih
@@ -303,7 +309,7 @@
                     return;
                 }
 
-                if (!confirm('Yakin ingin menghapus data bahan baku yang dipilih?')) {
+                if (!confirm('Yakin ingin menghapus produk bahan baku yang dipilih?')) {
                     event.preventDefault();
                 }
             });

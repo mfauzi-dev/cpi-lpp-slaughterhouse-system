@@ -181,30 +181,17 @@ class BahanBakuController extends Controller
     public function bulkDestroy(Request $request)
     {
         $request->validate([
-            'ids' => [
-                'required',
-                'array',
-                'min:1',
-            ],
-            'ids.*' => [
-                'required',
-                'integer',
-                'distinct',
-                'exists:production_batches,id',
-            ],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'integer', 'distinct', 'exists:bahan_bakus,id'],
         ]);
 
         DB::transaction(function () use ($request) {
-            BahanBaku::whereIn('production_batch_id', $request->ids)
-                ->delete();
+            BahanBaku::whereIn('id', $request->ids)->delete();
         });
 
         return redirect()
-            ->route('operator.bahan-baku.index')
-            ->with(
-                'success',
-                'Data produksi bahan baku yang dipilih berhasil dihapus.'
-            );
+            ->back()
+            ->with('success', 'Data bahan baku yang dipilih berhasil dihapus.');
     }
 
     public function edit($id)
