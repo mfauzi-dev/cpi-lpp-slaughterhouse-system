@@ -131,7 +131,6 @@
                 <div class="card-body">
                     <form id="bulkDeleteForm" action="{{ route('operator.bahan-baku.bulk-destroy') }}" method="POST">
                         @csrf
-                        @method('DELETE')
 
                         <div class="table-responsive">
                             <table class="table table-bordered table-wide">
