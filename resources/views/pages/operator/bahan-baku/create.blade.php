@@ -14,10 +14,6 @@
             </div>
         </div>
 
-        <div class="section-lead">
-            Tambahkan data produksi bahan baku berdasarkan production batch, jumlah bag, dan berat dalam kilogram.
-        </div>
-
         <div class="section-body">
             @if ($errors->any())
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -33,91 +29,96 @@
                 </div>
             @endif
 
-            <form action="{{ route('operator.bahan-baku.store') }}" method="POST" id="bahanBakuForm">
+            <form action="{{ route('operator.bahan-baku.store') }}" method="POST" id="productionForm">
                 @csrf
+
+                <input type="hidden" name="production_batch_id" id="production_batch_id"
+                    value="{{ old('production_batch_id') }}">
 
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4>
-                            <span class="step-badge">1</span>
-                            Informasi Produksi
-                        </h4>
+                        <h4>1. Informasi Produksi</h4>
                     </div>
 
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="tanggal_produksi">
-                                    Tanggal Produksi <span class="text-danger">*</span>
-                                </label>
-                                <input type="date" name="tanggal_produksi" id="tanggal_produksi"
-                                    class="form-control @error('tanggal_produksi') is-invalid @enderror"
-                                    value="{{ old('tanggal_produksi') }}" required>
-                                @error('tanggal_produksi')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="tanggal_produksi">Tanggal Produksi <span
+                                            class="text-danger">*</span></label>
+                                    <input type="date" name="tanggal_produksi" id="tanggal_produksi"
+                                        class="form-control @error('tanggal_produksi') is-invalid @enderror"
+                                        value="{{ old('tanggal_produksi') }}" required>
+                                    @error('tanggal_produksi')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
-                            <div class="col-md-8 mb-3">
-                                <label for="production_batch_id">
-                                    Production Batch <span class="text-danger">*</span>
-                                </label>
-                                <select name="production_batch_id" id="production_batch_id"
-                                    class="form-control select2 @error('production_batch_id') is-invalid @enderror" required
-                                    disabled>
-                                    <option value="">Pilih tanggal terlebih dahulu</option>
-                                </select>
-                                @error('production_batch_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="shift">Shift <span class="text-danger">*</span></label>
+                                    <select id="shift" class="form-control select2" required disabled>
+                                        <option value="">Pilih tanggal terlebih dahulu</option>
+                                    </select>
+                                    <small class="form-text text-muted" id="batch_message">
+                                        Pilih tanggal untuk menampilkan shift yang tersedia.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="cost_center_name">Cost Center Name</label>
+                                    <select name="cost_center_name" id="cost_center_name"
+                                        class="form-control @error('cost_center_name') is-invalid @enderror">
+                                        <option value="">Pilih Cost Center</option>
+                                        @foreach (['FCHO', 'FCHS', 'FCHM', 'FCHT', 'FCHR', 'FCH1', 'FCH2', 'FCH3', 'FCH4', 'FCH5'] as $costCenter)
+                                            <option value="{{ $costCenter }}"
+                                                {{ old('cost_center_name') == $costCenter ? 'selected' : '' }}>
+                                                {{ $costCenter }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('cost_center_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="no_po">No. PO</label>
+                                    <input type="text" name="no_po" id="no_po"
+                                        class="form-control @error('no_po') is-invalid @enderror"
+                                        value="{{ old('no_po') }}" placeholder="Masukkan nomor PO">
+                                    @error('no_po')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <div class="info-box">
-                                    <div class="info-label">Shift</div>
-                                    <div class="info-value" id="batch_shift">-</div>
+                        <div class="batch-summary" id="production-summary" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <i class="fas fa-boxes"></i>
+                                    Jumlah Jenis Bahan Baku:
+                                    <strong id="info_jumlah_produk">0</strong>
                                 </div>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <div class="info-box">
-                                    <div class="info-label">Cost Center Name</div>
-                                    <div class="info-value" id="batch_cost_center">-</div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <div class="info-box">
-                                    <div class="info-label">No. PO</div>
-                                    <div class="info-value" id="batch_no_po">-</div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <div class="info-box">
-                                    <div class="info-label">Tanggal Transfer</div>
-                                    <div class="info-value" id="batch_tanggal_transfer">-</div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <div class="info-box">
-                                    <div class="info-label">Tanggal Proses</div>
-                                    <div class="info-value" id="batch_tanggal_proses">-</div>
+                                <div class="col-md-6">
+                                    <i class="fas fa-weight-hanging"></i>
+                                    Total Berat Bahan Baku:
+                                    <strong id="info_total_kg">0,00 KG</strong>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card card-accent mb-4" id="product-card">
+                <div class="card card-accent mb-4">
                     <div class="card-header">
-                        <h4>
-                            <span class="step-badge">2</span>
-                            Data Produk
-                        </h4>
+                        <h4>2. Data Bahan Baku</h4>
                     </div>
 
                     <div class="card-body p-0">
@@ -126,29 +127,33 @@
                                 <thead>
                                     <tr>
                                         <th width="70" class="text-center">No</th>
-                                        <th>Nama Produk</th>
+                                        <th>Material</th>
                                         <th>Jumlah Bag</th>
-                                        <th>Jumlah KG</th>
+                                        <th>Berat (KG)</th>
                                         <th width="100" class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="product-table-body">
                                     @php
-                                        $oldProducts = old('products', [
-                                            ['material_id' => '', 'jumlah_bag' => '', 'jumlah_kg' => ''],
-                                        ]);
+                                        $formProducts = old('products');
+
+                                        if (!is_array($formProducts) || count($formProducts) === 0) {
+                                            $formProducts = [
+                                                ['material_id' => '', 'jumlah_bag' => '', 'jumlah_kg' => ''],
+                                            ];
+                                        }
                                     @endphp
 
-                                    @foreach ($oldProducts as $index => $product)
-                                        <tr data-row-index="{{ $index }}">
-                                            <td class="text-center align-middle nomor">{{ $loop->iteration }}</td>
+                                    @foreach ($formProducts as $index => $item)
+                                        <tr>
+                                            <td class="text-center align-middle nomor">{{ $index + 1 }}</td>
                                             <td>
                                                 <select name="products[{{ $index }}][material_id]"
-                                                    class="form-control select2 material-select" required>
-                                                    <option value="">Pilih Nama Produk</option>
+                                                    class="form-control material-select select2" required>
+                                                    <option value="">Pilih Material</option>
                                                     @foreach ($materials as $material)
                                                         <option value="{{ $material->id }}"
-                                                            {{ ($product['material_id'] ?? '') == $material->id ? 'selected' : '' }}>
+                                                            {{ (string) ($item['material_id'] ?? '') === (string) $material->id ? 'selected' : '' }}>
                                                             {{ $material->material_code }} -
                                                             {{ $material->material_description }}
                                                         </option>
@@ -157,14 +162,14 @@
                                             </td>
                                             <td>
                                                 <input type="number" name="products[{{ $index }}][jumlah_bag]"
-                                                    class="form-control jumlah-bag" placeholder="Jumlah bag"
-                                                    value="{{ $product['jumlah_bag'] ?? '' }}" min="0"
-                                                    step="1" required>
+                                                    class="form-control jumlah-bag" min="0" step="1"
+                                                    value="{{ $item['jumlah_bag'] ?? '' }}" placeholder="Jumlah bag"
+                                                    required>
                                             </td>
                                             <td>
                                                 <input type="number" name="products[{{ $index }}][jumlah_kg]"
-                                                    class="form-control jumlah-kg" placeholder="Berat (KG)"
-                                                    value="{{ $product['jumlah_kg'] ?? '' }}" min="0" step="0.01"
+                                                    class="form-control jumlah-kg" min="0" step="0.01"
+                                                    value="{{ $item['jumlah_kg'] ?? '' }}" placeholder="Berat (KG)"
                                                     required>
                                             </td>
                                             <td class="text-center align-middle">
@@ -180,32 +185,21 @@
                         </div>
                     </div>
 
-                    <div class="card-footer bg-white border-top">
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <div class="info-box">
-                                    <div class="info-label">Jumlah Jenis Produk</div>
-                                    <div class="info-value" id="total_produk">0 produk</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-box">
-                                    <div class="info-label">Total Berat</div>
-                                    <div class="info-value" id="total_kg">0,00 KG</div>
-                                </div>
-                            </div>
-                        </div>
-
+                    <div class="card-footer bg-white">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
-                            <button type="button" id="btnAddRow" class="btn btn-add mb-2 mb-md-0">
-                                <i class="fas fa-plus mr-1"></i> Tambah Baris
+                            <button type="button" id="btnAddRow" class="btn btn-add mb-2">
+                                <i class="fas fa-plus mr-1"></i>
+                                Tambah Baris
                             </button>
+
                             <div class="action-buttons">
-                                <a href="{{ route('operator.bahan-baku.index') }}" class="btn btn-ghost">
-                                    <i class="fas fa-arrow-left mr-1"></i> Kembali
+                                <a href="{{ route('operator.bahan-baku.index') }}" class="btn btn-ghost mb-2">
+                                    <i class="fas fa-arrow-left mr-1"></i>
+                                    Kembali
                                 </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save mr-1"></i> Simpan
+                                <button type="submit" class="btn btn-primary mb-2">
+                                    <i class="fas fa-save mr-1"></i>
+                                    Simpan Produksi Bahan Baku
                                 </button>
                             </div>
                         </div>
@@ -216,296 +210,311 @@
     </div>
 @endsection
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('stisla/node_modules/select2/dist/css/select2.min.css') }}">
+    <style>
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-container--default .select2-selection--single {
+            min-height: 38px;
+            border: 1px solid #e4e6fc;
+            border-radius: 4px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+    </style>
+@endpush
+
 @push('scripts')
+    <script src="{{ asset('stisla/node_modules/select2/dist/js/select2.full.min.js') }}"></script>
     <script>
         $(document).ready(function() {
-            const materials =
-                {{ Illuminate\Support\Js::from(
-                    $materials->map(function ($material) {
-                            return [
-                                'id' => $material->id,
-                                'material_code' => $material->material_code,
-                                'material_description' => $material->material_description,
-                            ];
-                        })->values(),
-                ) }};
+            function initSelect2(element) {
+                $(element).select2({
+                    width: '100%',
+                    placeholder: 'Pilih Material',
+                    allowClear: true
+                });
+            }
 
-            let rowIndex = {{ count($oldProducts) }};
+            $('.material-select').each(function() {
+                initSelect2(this);
+            });
 
-            $('.select2').select2({
+            $('#shift').select2({
                 width: '100%',
-                placeholder: 'Pilih opsi',
+                placeholder: 'Pilih Shift',
                 allowClear: true
             });
 
-            function escapeHtml(value) {
-                return $('<div>').text(value ?? '').html();
+            let rowIndex = $('#product-table-body tr').length;
+            let batchRequest = null;
+            let infoRequest = null;
+
+            function formatNumber(value) {
+                return Number(value || 0).toLocaleString('id-ID', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+
+            function resetProductionInfo() {
+                $('#production_batch_id').val('');
+                $('#info_jumlah_produk').text('0');
+                $('#info_total_kg').text('0,00 KG');
+                $('#production-summary').hide();
+            }
+
+            function resetProductRows() {
+                $('#product-table-body .material-select').each(function() {
+                    if ($(this).hasClass('select2-hidden-accessible')) {
+                        $(this).select2('destroy');
+                    }
+                });
+
+                $('#product-table-body').empty();
+                rowIndex = 0;
+                addProductRow();
             }
 
             function buildMaterialOptions(selectedId = '') {
-                let options = '<option value="">Pilih Nama Produk</option>';
+                let options = '<option value="">Pilih Material</option>';
 
-                materials.forEach(function(material) {
-                    const selected = String(material.id) === String(selectedId) ? 'selected' : '';
-
-                    options += `<option value="${material.id}" ${selected}>
-                        ${escapeHtml(material.material_code)} - ${escapeHtml(material.material_description)}
-                    </option>`;
-                });
+                @foreach ($materials as $material)
+                    options +=
+                        `<option value="{{ $material->id }}" ${String(selectedId) === '{{ $material->id }}' ? 'selected' : ''}>{{ addslashes($material->material_code) }} - {{ addslashes($material->material_description) }}</option>`;
+                @endforeach
 
                 return options;
             }
 
-            function resetBatchInfo() {
-                $('#batch_shift').text('-');
-                $('#batch_cost_center').text('-');
-                $('#batch_no_po').text('-');
-                $('#batch_tanggal_transfer').text('-');
-                $('#batch_tanggal_proses').text('-');
-            }
-
-            function formatDate(date) {
-                if (!date) {
-                    return '-';
-                }
-
-                const parts = date.split('-');
-
-                if (parts.length !== 3) {
-                    return date;
-                }
-
-                return `${parts[2]}/${parts[1]}/${parts[0]}`;
-            }
-
-            function updateSummary() {
-                let totalKg = 0;
-                let totalProduk = 0;
-                const selectedIds = [];
-
-                $('#product-table-body tr').each(function(index) {
-                    $(this).find('.nomor').text(index + 1);
-
-                    const materialId = $(this).find('.material-select').val();
-
-                    if (materialId) {
-                        totalProduk++;
-                        selectedIds.push(String(materialId));
-                    }
-
-                    totalKg += parseFloat($(this).find('.jumlah-kg').val()) || 0;
-                });
-
-                $('#total_produk').text(totalProduk + ' produk');
-                $('#total_kg').text(totalKg.toLocaleString('id-ID', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }) + ' KG');
-
-                $('.material-select').each(function() {
-                    const currentId = String($(this).val() || '');
-
-                    $(this).find('option').each(function() {
-                        const optionId = String($(this).val() || '');
-                        const duplicate = optionId !== '' &&
-                            optionId !== currentId &&
-                            selectedIds.includes(optionId);
-
-                        $(this).prop('disabled', duplicate);
-                    });
-
-                    $(this).trigger('change.select2');
-                });
-            }
-
-            $('#tanggal_produksi').on('change', function() {
-                const date = $(this).val();
-                const batchSelect = $('#production_batch_id');
-
-                resetBatchInfo();
-
-                batchSelect
-                    .empty()
-                    .append('<option value="">Memuat production batch...</option>')
-                    .prop('disabled', true)
-                    .trigger('change');
-
-                if (!date) {
-                    batchSelect
-                        .empty()
-                        .append('<option value="">Pilih tanggal terlebih dahulu</option>')
-                        .trigger('change');
-
-                    return;
-                }
-
-                $.ajax({
-                    url: `{{ url('production-batch/by-date') }}/${date}`,
-                    type: 'GET',
-                    success: function(response) {
-                        batchSelect
-                            .empty()
-                            .append('<option value="">Pilih Production Batch</option>');
-
-                        if (!response.length) {
-                            batchSelect
-                                .append(
-                                    '<option value="">Tidak ada production batch pada tanggal ini</option>'
-                                )
-                                .trigger('change');
-
-                            return;
-                        }
-
-                        response.forEach(function(batch) {
-                            batchSelect.append(`
-                                <option
-                                    value="${batch.id}"
-                                    data-shift="${escapeHtml(batch.shift ?? '')}"
-                                    data-cost-center="${escapeHtml(batch.cost_center_name ?? '')}"
-                                    data-no-po="${escapeHtml(batch.no_po ?? '')}"
-                                    data-tanggal-transfer="${escapeHtml(batch.tanggal_transfer ?? '')}"
-                                    data-tanggal-proses="${escapeHtml(batch.tanggal_proses ?? '')}">
-                                    No. PO - #${batch.no_po}
-                                </option>
-                            `);
-                        });
-
-                        batchSelect
-                            .prop('disabled', false)
-                            .trigger('change');
-
-                        const oldBatchId = @json(old('production_batch_id'));
-
-                        if (oldBatchId) {
-                            batchSelect.val(String(oldBatchId)).trigger('change');
-                        }
-                    },
-                    error: function() {
-                        batchSelect
-                            .empty()
-                            .append('<option value="">Gagal memuat production batch</option>')
-                            .trigger('change');
-                    }
-                });
-            });
-
-            $('#production_batch_id').on('change', function() {
-                const selected = $(this).find(':selected');
-
-                if (!$(this).val()) {
-                    resetBatchInfo();
-                    return;
-                }
-
-                $('#batch_shift').text(selected.attr('data-shift') || '-');
-                $('#batch_cost_center').text(selected.attr('data-cost-center') || '-');
-                $('#batch_no_po').text(selected.attr('data-no-po') || '-');
-                $('#batch_tanggal_transfer').text(
-                    formatDate(selected.attr('data-tanggal-transfer'))
-                );
-                $('#batch_tanggal_proses').text(
-                    formatDate(selected.attr('data-tanggal-proses'))
-                );
-            });
-
-            $('#btnAddRow').on('click', function() {
+            function addProductRow(materialId = '', jumlahBag = '', jumlahKg = '') {
                 const index = rowIndex++;
 
-                const html = `
-                    <tr data-row-index="${index}">
+                const row = `
+                    <tr>
                         <td class="text-center align-middle nomor"></td>
                         <td>
                             <select name="products[${index}][material_id]"
                                 class="form-control material-select" required>
-                                ${buildMaterialOptions()}
+                                ${buildMaterialOptions(materialId)}
                             </select>
                         </td>
                         <td>
                             <input type="number" name="products[${index}][jumlah_bag]"
-                                class="form-control jumlah-bag" placeholder="Jumlah bag"
-                                min="0" step="1" required>
+                                class="form-control jumlah-bag" min="0" step="1"
+                                value="${jumlahBag}" placeholder="Jumlah bag" required>
                         </td>
                         <td>
                             <input type="number" name="products[${index}][jumlah_kg]"
-                                class="form-control jumlah-kg" placeholder="Berat (KG)"
-                                min="0" step="0.01" required>
+                                class="form-control jumlah-kg" min="0" step="0.01"
+                                value="${jumlahKg}" placeholder="Berat (KG)" required>
                         </td>
                         <td class="text-center align-middle">
-                            <button type="button" class="btn btn-outline-danger btn-sm removeRow"
-                                title="Hapus Baris">
+                            <button type="button" class="btn btn-outline-danger btn-sm removeRow" title="Hapus Baris">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
                     </tr>
                 `;
 
-                const row = $(html);
-                $('#product-table-body').append(row);
+                const $row = $(row);
+                $('#product-table-body').append($row);
 
-                row.find('.material-select').select2({
-                    width: '100%',
-                    placeholder: 'Pilih Nama Produk',
-                    allowClear: true
+                initSelect2($row.find('.material-select'));
+
+                renumberRows();
+            }
+
+            function renumberRows() {
+                $('#product-table-body tr').each(function(index) {
+                    $(this).find('.nomor').text(index + 1);
                 });
+            }
 
-                updateSummary();
+            $('#btnAddRow').on('click', function() {
+                addProductRow();
             });
 
             $(document).on('click', '.removeRow', function() {
                 if ($('#product-table-body tr').length <= 1) {
-                    alert('Minimal harus ada 1 baris produk.');
+                    alert('Minimal harus ada satu baris bahan baku.');
                     return;
                 }
 
-                const row = $(this).closest('tr');
-                const select = row.find('.material-select');
+                const $row = $(this).closest('tr');
+                const $select = $row.find('.material-select');
 
-                if (select.hasClass('select2-hidden-accessible')) {
-                    select.select2('destroy');
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.select2('destroy');
                 }
 
-                row.remove();
-                updateSummary();
+                $row.remove();
+                renumberRows();
             });
 
-            $(document).on('change', '.material-select', updateSummary);
-            $(document).on('input change', '.jumlah-kg', updateSummary);
+            $('#tanggal_produksi').on('change', function() {
+                const tanggal = $(this).val();
+                const shiftSelect = $('#shift');
 
-            $('#bahanBakuForm').on('submit', function(e) {
-                const selected = [];
-                let valid = true;
+                if (batchRequest) {
+                    batchRequest.abort();
+                }
 
-                if (!$('#production_batch_id').val()) {
-                    alert('Pilih production batch terlebih dahulu.');
-                    e.preventDefault();
+                if (infoRequest) {
+                    infoRequest.abort();
+                }
+
+                resetProductionInfo();
+                resetProductRows();
+
+                shiftSelect.empty()
+                    .append(new Option('Memuat shift...', ''))
+                    .prop('disabled', true)
+                    .trigger('change.select2');
+
+                $('#batch_message').text('Memuat data production batch...');
+
+                if (!tanggal) {
+                    shiftSelect.empty()
+                        .append(new Option('Pilih tanggal terlebih dahulu', ''))
+                        .trigger('change.select2');
+
+                    $('#batch_message').text('Pilih tanggal untuk menampilkan shift yang tersedia.');
                     return;
                 }
 
-                $('.material-select').each(function() {
-                    const id = $(this).val();
+                batchRequest = $.ajax({
+                    url: `/production-batch/by-date/${encodeURIComponent(tanggal)}`,
+                    type: 'GET',
+                    success: function(response) {
+                        shiftSelect.empty().append(new Option('Pilih Shift', ''));
 
-                    if (!id) {
-                        alert('Pilih produk untuk setiap baris.');
-                        valid = false;
+                        if (!Array.isArray(response) || response.length === 0) {
+                            shiftSelect.empty()
+                                .append(new Option('Tidak ada batch pada tanggal ini', ''))
+                                .prop('disabled', true)
+                                .trigger('change.select2');
+
+                            $('#batch_message').text(
+                                'Tidak ditemukan production batch pada tanggal tersebut.');
+                            return;
+                        }
+
+                        response.forEach(function(batch) {
+                            const option = new Option(`Shift ${batch.shift}`, batch
+                                .shift);
+
+                            $(option).attr('data-batch-id', batch.id);
+                            $(option).attr('data-tanggal-transfer', batch
+                                .tanggal_transfer ?? '');
+                            $(option).attr('data-tanggal-proses', batch
+                                .tanggal_proses ?? '');
+
+                            shiftSelect.append(option);
+                        });
+
+                        shiftSelect.prop('disabled', false).trigger('change.select2');
+                        $('#batch_message').text(
+                            'Pilih shift untuk menentukan production batch.');
+                    },
+                    error: function(xhr, status) {
+                        if (status === 'abort') {
+                            return;
+                        }
+
+                        shiftSelect.empty()
+                            .append(new Option('Gagal memuat shift', ''))
+                            .prop('disabled', true)
+                            .trigger('change.select2');
+
+                        $('#batch_message').text(
+                            'Terjadi kesalahan saat mengambil data production batch.');
+                    }
+                });
+            });
+
+            $('#shift').on('change', function() {
+                const selected = $(this).find(':selected');
+                const batchId = selected.attr('data-batch-id');
+
+                if (infoRequest) {
+                    infoRequest.abort();
+                }
+
+                resetProductionInfo();
+
+                if (!batchId) {
+                    return;
+                }
+
+                $('#production_batch_id').val(batchId);
+                $('#production-summary').show();
+                $('#info_jumlah_produk').text('Memuat...');
+                $('#info_total_kg').text('Memuat...');
+
+                infoRequest = $.ajax({
+                    url: '{{ route('operator.hasil-produksi.get-products') }}',
+                    type: 'GET',
+                    data: {
+                        production_batch_id: batchId
+                    },
+                    success: function(response) {
+                        $('#info_jumlah_produk').text((response.jumlah_produk ?? 0) + ' jenis');
+                        $('#info_total_kg').text(formatNumber(response.total_kg) + ' KG');
+                    },
+                    error: function(xhr, status) {
+                        if (status === 'abort') {
+                            return;
+                        }
+
+                        $('#info_jumlah_produk').text('-');
+                        $('#info_total_kg').text('-');
+                    }
+                });
+            });
+
+            $('#productionForm').on('submit', function(event) {
+                if (!$('#production_batch_id').val()) {
+                    event.preventDefault();
+                    alert('Silakan pilih tanggal produksi dan shift terlebih dahulu.');
+                    return;
+                }
+
+                const selectedMaterials = [];
+                let duplicateMaterial = false;
+
+                $('#product-table-body tr').each(function() {
+                    const materialId = $(this).find('.material-select').val();
+
+                    if (!materialId) {
+                        return;
+                    }
+
+                    if (selectedMaterials.includes(materialId)) {
+                        duplicateMaterial = true;
                         return false;
                     }
 
-                    if (selected.includes(String(id))) {
-                        alert('Produk yang sama tidak boleh dipilih lebih dari sekali.');
-                        valid = false;
-                        return false;
-                    }
-
-                    selected.push(String(id));
+                    selectedMaterials.push(materialId);
                 });
 
-                if (!valid) {
-                    e.preventDefault();
+                if (duplicateMaterial) {
+                    event.preventDefault();
+                    alert('Material yang sama tidak boleh dipilih lebih dari satu kali.');
                 }
             });
 
-            updateSummary();
+            renumberRows();
 
             const oldTanggal = @json(old('tanggal_produksi'));
 

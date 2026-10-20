@@ -15,7 +15,7 @@
         </div>
 
         <div class="section-lead">
-            Perbarui data produksi bahan baku berdasarkan production batch.
+            Perbarui data bahan baku berdasarkan No. PO yang dipilih.
         </div>
 
         <div class="section-body">
@@ -33,7 +33,16 @@
                 </div>
             @endif
 
-            <form action="{{ route('operator.bahan-baku.update', $production->id) }}" method="POST" id="productionForm">
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            @endif
+
+            <form action="{{ route('operator.bahan-baku.update', $bahanBaku->id) }}" method="POST" id="productionForm">
                 @csrf
                 @method('PUT')
 
@@ -51,7 +60,7 @@
                                 <div class="form-group">
                                     <label class="filter-label">Tanggal Produksi</label>
                                     <input type="date" class="form-control"
-                                        value="{{ old('tanggal', optional($production->tanggal)->format('Y-m-d')) }}"
+                                        value="{{ old('tanggal', $production->tanggal ? \Carbon\Carbon::parse($production->tanggal)->format('Y-m-d') : '') }}"
                                         disabled>
                                 </div>
                             </div>
@@ -67,7 +76,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="filter-label">No. PO</label>
-                                    <input type="text" class="form-control" value="{{ $production->no_po ?? '-' }}"
+                                    <input type="text" class="form-control" value="{{ $bahanBaku->no_po ?? '-' }}"
                                         disabled>
                                 </div>
                             </div>
@@ -78,7 +87,7 @@
                                 <div class="info-box">
                                     <div class="info-label">Tanggal Transfer</div>
                                     <div class="info-value">
-                                        {{ $production->tanggal_transfer ? $production->tanggal_transfer->format('d-m-Y') : '-' }}
+                                        {{ $production->tanggal_transfer ? \Carbon\Carbon::parse($production->tanggal_transfer)->format('d-m-Y') : '-' }}
                                     </div>
                                 </div>
                             </div>
@@ -87,7 +96,7 @@
                                 <div class="info-box">
                                     <div class="info-label">Tanggal Proses</div>
                                     <div class="info-value">
-                                        {{ $production->tanggal_proses ? $production->tanggal_proses->format('d-m-Y') : '-' }}
+                                        {{ $production->tanggal_proses ? \Carbon\Carbon::parse($production->tanggal_proses)->format('d-m-Y') : '-' }}
                                     </div>
                                 </div>
                             </div>
@@ -117,7 +126,7 @@
                             $formProducts = old('products');
 
                             if (!is_array($formProducts)) {
-                                $formProducts = $production->bahanBakus
+                                $formProducts = $products
                                     ->map(function ($item) {
                                         return [
                                             'material_id' => $item->material_id,
@@ -238,14 +247,14 @@
                 });
             }
 
-            function buildMaterialOptions(selectedMaterialId = '') {
+            function buildMaterialOptions() {
                 let options = '<option value="">Pilih Material</option>';
 
                 @foreach ($materials as $material)
                     options += `
-                        <option value="{{ $material->id }}"
-                            ${String({{ $material->id }}) === String(selectedMaterialId) ? 'selected' : ''}>
-                            {{ addslashes($material->material_code) }} - {{ addslashes($material->material_description) }}
+                        <option value="{{ $material->id }}">
+                            {{ addslashes($material->material_code) }} -
+                            {{ addslashes($material->material_description) }}
                         </option>
                     `;
                 @endforeach
@@ -264,13 +273,17 @@
                             </select>
                         </td>
                         <td>
-                            <input type="number" name="products[${rowIndex}][jumlah_bag]"
-                                class="form-control jumlah-bag" min="0" step="1"
+                            <input type="number"
+                                name="products[${rowIndex}][jumlah_bag]"
+                                class="form-control jumlah-bag"
+                                min="0" step="1"
                                 placeholder="Jumlah bag" required>
                         </td>
                         <td>
-                            <input type="number" name="products[${rowIndex}][jumlah_kg]"
-                                class="form-control jumlah-kg" min="0" step="0.01"
+                            <input type="number"
+                                name="products[${rowIndex}][jumlah_kg]"
+                                class="form-control jumlah-kg"
+                                min="0" step="0.01"
                                 placeholder="Berat (KG)" required>
                         </td>
                         <td class="text-center align-middle">
@@ -302,7 +315,6 @@
 
             $('#productionForm').on('submit', function(event) {
                 const selectedMaterials = [];
-
                 let valid = true;
 
                 $('#product-table-body tr').each(function() {

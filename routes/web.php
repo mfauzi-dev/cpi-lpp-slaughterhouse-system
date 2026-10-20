@@ -82,6 +82,8 @@ Route::prefix('operator')->middleware(['auth', 'role:Operator'])->group(function
         Route::post('/store', [DataHasilProduksiController::class, 'store'])->name('operator.hasil-produksi.store');
 
         Route::get('/get-products', [DataHasilProduksiController::class, 'getProducts'])->name('operator.hasil-produksi.get-products');
+        Route::get('/get-po-list', [DataHasilProduksiController::class, 'getPoList'])->name('operator.hasil-produksi.get-po-list');
+        Route::get('/get-bahan-baku-by-po', [DataHasilProduksiController::class, 'getBahanBakuByPo'])->name('operator.hasil-produksi.get-bahan-baku-by-po');
 
         Route::get('/{id}', [DataHasilProduksiController::class, 'detail'])->name('operator.hasil-produksi.detail');
         Route::get('/{id}/edit', [DataHasilProduksiController::class, 'edit'])->name('operator.hasil-produksi.edit');

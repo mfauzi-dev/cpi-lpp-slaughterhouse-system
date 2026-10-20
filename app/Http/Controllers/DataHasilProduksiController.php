@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class DataHasilProduksiController extends Controller
 {
-   public function index(Request $request)
+    public function index(Request $request)
     {
         $query = DataHasilProduksi::with(['productionBatch', 'material'])->latest();
 
@@ -53,19 +53,21 @@ class DataHasilProduksiController extends Controller
             ->latest('id')
             ->get();
 
-        $materials = Material::orderBy('material_code')->get([
-            'id',
-            'material_code',
-            'material_description',
-        ]);
-
         return view(
             'pages.operator.hasil-produksi.create',
-            compact('productions', 'materials')
+            compact('productions')
         );
     }
 
-    public function getProducts(Request $request)
+    /**
+     * Daftar No. PO (dari bahan baku) beserta ringkasannya untuk satu
+     * production batch. Dipanggil setelah user memilih shift, untuk mengisi
+     * pilihan "No. PO (Bahan Baku)" di step Informasi Produksi. Pilihan ini
+     * HANYA menentukan Jumlah KG pembagi yield & material yang muncul —
+     * tidak ada hubungannya dengan field no_po/cost_center_name milik
+     * hasil produksi sendiri (itu input manual, lihat store()/update()).
+     */
+    public function getPoList(Request $request)
     {
         $request->validate([
             'production_batch_id' => [
@@ -75,26 +77,67 @@ class DataHasilProduksiController extends Controller
             ],
         ]);
 
-        $production = ProductionBatch::withCount('bahanBakus')
-            ->withSum('bahanBakus', 'jumlah_kg')
-            ->findOrFail($request->production_batch_id);
-        
-        $bahanBakus = BahanBaku::with('material:id,material_code,material_description')
-            ->where('production_batch_id', $production->id)
-            ->get(['id', 'material_id', 'jumlah_bag', 'jumlah_kg']);
+        $groups = BahanBaku::where('production_batch_id', $request->production_batch_id)
+            ->get(['no_po', 'jumlah_kg'])
+            ->groupBy(fn ($item) => $item->no_po ?? '')
+            ->map(function ($items, $noPo) {
+                return [
+                    'no_po' => $noPo,
+                    'jumlah_produk' => $items->count(),
+                    'total_kg' => $items->sum('jumlah_kg'),
+                ];
+            })
+            ->values();
 
-        return response()->json([
-            'id' => $production->id,
-            'tanggal' => $production->tanggal?->format('Y-m-d'),
-            'shift' => $production->shift,
-            'conveyor' => $production->conveyor,
-            'absen_worker' => $production->absen_worker,
-            'tanggal_transfer' => $production->tanggal_transfer?->format('Y-m-d'),
-            'tanggal_proses' => $production->tanggal_proses?->format('Y-m-d'),
-            'jumlah_produk' => $production->bahan_bakus_count,
-            'total_kg' => $production->bahan_bakus_sum_jumlah_kg ?? 0,
-            'bahan_bakus' => $bahanBakus,
+        return response()->json($groups);
+    }
+
+    public function getProducts(Request $request)
+    {
+
+        $materials = Material::query()
+            ->orderBy('material_code')
+            ->get(['id', 'material_code', 'material_description']);
+
+         return response()->json($materials);
+    }
+
+    public function getBahanBakuByPo(Request $request)
+    {
+        $request->validate([
+            'production_batch_id' => [
+                'required',
+                'integer',
+                'exists:production_batches,id',
+            ],
+            'no_po' => ['present', 'nullable', 'string'],
         ]);
+
+        $query = BahanBaku::with([
+            'material:id,material_code,material_description',
+        ])->where('production_batch_id', $request->production_batch_id);
+
+        if ($request->input('no_po') === '') {
+            $query->where(function ($q) {
+                $q->whereNull('no_po')
+                    ->orWhere('no_po', '');
+            });
+        } else {
+            $query->where('no_po', $request->no_po);
+        }
+
+        $bahanBakus = $query
+            ->orderBy('id')
+            ->get([
+                'id',
+                'production_batch_id',
+                'no_po',
+                'material_id',
+                'jumlah_bag',
+                'jumlah_kg',
+            ]);
+
+        return response()->json($bahanBakus);
     }
 
     public function store(Request $request)
@@ -104,6 +147,12 @@ class DataHasilProduksiController extends Controller
                 'required',
                 'integer',
                 'exists:production_batches,id',
+            ],
+            'no_po' => ['nullable', 'string', 'max:255'],
+            'cost_center_name' => [
+                'nullable',
+                'string',
+                'in:FCHO,FCHS,FCHM,FCHT,FCHR,FCH1,FCH2,FCH3,FCH4,FCH5',
             ],
             'material_id' => [
                 'required',
@@ -135,9 +184,11 @@ class DataHasilProduksiController extends Controller
                 $yieldPersen = $jumlahKgBahanBaku > 0
                     ? round(($totalKg / $jumlahKgBahanBaku) * 100, 2)
                     : 0;
-                
+
                 DataHasilProduksi::create([
                     'production_batch_id' => $request->production_batch_id,
+                    'no_po' => $request->no_po,
+                    'cost_center_name' => $request->cost_center_name,
                     'material_id' => $request->material_id,
                     'domestik_kg' => $request->domestik_kg ?? 0,
                     'further_kg' => $request->further_kg ?? 0,
@@ -161,6 +212,8 @@ class DataHasilProduksiController extends Controller
                 ->route('operator.hasil-produksi.index')
                 ->with('success', 'Data hasil produksi berhasil disimpan.');
         } catch (\Throwable $e) {
+            report($e);
+
             return back()
                 ->withInput()
                 ->with('error', 'Gagal menyimpan data hasil produksi.');
@@ -187,15 +240,9 @@ class DataHasilProduksiController extends Controller
             ->latest('id')
             ->get();
 
-        $materials = Material::orderBy('material_code')->get([
-            'id',
-            'material_code',
-            'material_description',
-        ]);
-
         return view(
             'pages.operator.hasil-produksi.edit',
-            compact('hasilProduksi', 'productions', 'materials')
+            compact('hasilProduksi', 'productions')
         );
     }
 
@@ -206,6 +253,12 @@ class DataHasilProduksiController extends Controller
                 'required',
                 'integer',
                 'exists:production_batches,id',
+            ],
+            'no_po' => ['nullable', 'string', 'max:255'],
+            'cost_center_name' => [
+                'nullable',
+                'string',
+                'in:FCHO,FCHS,FCHM,FCHT,FCHR,FCH1,FCH2,FCH3,FCH4,FCH5',
             ],
             'material_id' => [
                 'required',
@@ -240,6 +293,8 @@ class DataHasilProduksiController extends Controller
 
         $hasilProduksi->update([
             'production_batch_id' => $request->production_batch_id,
+            'no_po' => $request->no_po,
+            'cost_center_name' => $request->cost_center_name,
             'material_id' => $request->material_id,
             'domestik_kg' => $request->domestik_kg ?? 0,
             'further_kg' => $request->further_kg ?? 0,
@@ -334,5 +389,5 @@ class DataHasilProduksiController extends Controller
             'pages.manager.hasil-produksi.detail',
             compact('hasilProduksi')
         );
-    } 
+    }
 }

@@ -41,7 +41,7 @@ class LaporanPengendalianProdukDepanSheet implements
         return [
             'A' => 15,
             'B' => 15,
-            'C' => 15,
+            'C' => 19,
             'D' => 15,
             'E' => 15,
             'F' => 15,
@@ -53,6 +53,8 @@ class LaporanPengendalianProdukDepanSheet implements
             'L' => 15,
             'M' => 15,
             'N' => 15,
+            'O' => 17,
+            'P' => 19,
         ];
     }
 
@@ -139,6 +141,14 @@ class LaporanPengendalianProdukDepanSheet implements
 
                 $this->buildApproval($sheet, $row);
 
+                $lastRow = $sheet->getHighestRow();
+
+                $sheet->getStyle("A1:P{$lastRow}")
+                    ->getAlignment()
+                    ->setVertical(Alignment::VERTICAL_CENTER)
+                    ->setWrapText(true);
+
+                $sheet->getDefaultRowDimension()->setRowHeight(25);
                 $sheet->setShowGridlines(false);
             },
         ];
@@ -155,59 +165,53 @@ class LaporanPengendalianProdukDepanSheet implements
             ->setFitToHeight(0);
 
         $sheet->getPageMargins()
-            ->setTop(0.15)
-            ->setRight(0.15)
-            ->setBottom(0.15)
-            ->setLeft(0.15);
+            ->setTop(0.25)
+            ->setRight(0.2)
+            ->setBottom(0.25)
+            ->setLeft(0.2);
 
-        $sheet->getSheetView()->setZoomScale(85);
+        $sheet->getSheetView()->setZoomScale(75);
     }
 
     protected function buildHeader($sheet): void
     {
-        $sheet->mergeCells('A1:N1');
+        $sheet->mergeCells('A1:P1');
         $sheet->setCellValue('A1', 'PT CHAROEN POKPHAND INDONESIA');
 
-        $sheet->mergeCells('A2:N2');
+        $sheet->mergeCells('A2:P2');
         $sheet->setCellValue('A2', 'FOOD DIVISION');
 
-        $sheet->mergeCells('A3:N3');
+        $sheet->mergeCells('A3:P3');
         $sheet->setCellValue('A3', 'LAPORAN PENGENDALIAN PRODUK');
 
         $tanggal = $this->productionBatch->tanggal
             ? $this->productionBatch->tanggal->format('d/m/Y')
             : '-';
 
-        $sheet->mergeCells('A4:N4');
+        $sheet->mergeCells('A4:P4');
         $sheet->setCellValue(
             'A4',
-            'PRODUCTION BATCH : ' . $tanggal . ' - SHIFT ' . ($this->productionBatch->shift ?? '-')
+            'PRODUCTION BATCH : ' . $tanggal .
+            ' - SHIFT ' . ($this->productionBatch->shift ?? '-')
         );
 
-        $sheet->getStyle('A1:N4')
+        $sheet->getStyle('A1:P4')
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-            ->setVertical(Alignment::VERTICAL_CENTER);
+            ->setVertical(Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
 
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(18);
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(16);
-        $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(13);
 
-        $sheet->getRowDimension(1)->setRowHeight(32);
-        $sheet->getRowDimension(2)->setRowHeight(28);
-        $sheet->getRowDimension(3)->setRowHeight(34);
-        $sheet->getRowDimension(4)->setRowHeight(30);
+        $sheet->getRowDimension(1)->setRowHeight(36);
+        $sheet->getRowDimension(2)->setRowHeight(30);
+        $sheet->getRowDimension(3)->setRowHeight(38);
+        $sheet->getRowDimension(4)->setRowHeight(34);
     }
 
-    /**
-     * Info produksi, format pasangan label:value, 2 kolom (kiri & kanan), 4 baris:
-     * Tanggal - Absen Worker
-     * Shift - Tanggal Transfer
-     * Conveyor - Tanggal Proses
-     * No. PO - Cost Center Name
-     * Tanpa border, font 12.
-     */
     protected function buildProduction($sheet, int $row): int
     {
         $pb = $this->productionBatch;
@@ -231,56 +235,35 @@ class LaporanPengendalianProdukDepanSheet implements
                 'Tanggal Proses',
                 $pb->tanggal_proses ? $pb->tanggal_proses->format('d/m/Y') : '-',
             ],
-            [
-                'No. PO',
-                $pb->no_po ?? '-',
-                'Cost Center Name',
-                $pb->cost_center_name ?? '-',
-            ],
         ];
-
-        // Lebar penuh (14 kolom, A..N) dibagi: label1(3) value1(4) label2(3) value2(4)
-        $labelCol1Start = 'A'; $labelCol1End = 'C';
-        $valueCol1Start = 'D'; $valueCol1End = 'G';
-        $labelCol2Start = 'H'; $labelCol2End = 'J';
-        $valueCol2Start = 'K'; $valueCol2End = 'N';
 
         foreach ($pairs as $i => [$label1, $value1, $label2, $value2]) {
             $r = $row + $i;
 
-            $sheet->mergeCells("{$labelCol1Start}{$r}:{$labelCol1End}{$r}");
-            $sheet->setCellValue("{$labelCol1Start}{$r}", $label1 . ' :');
+            $cells = [
+                ['A', 'C', $label1 . ' :'],
+                ['D', 'G', $value1],
+                ['H', 'J', $label2 . ' :'],
+                ['K', 'P', $value2],
+            ];
 
-            $sheet->mergeCells("{$valueCol1Start}{$r}:{$valueCol1End}{$r}");
-            $sheet->setCellValue("{$valueCol1Start}{$r}", $value1);
+            foreach ($cells as [$start, $end, $value]) {
+                $sheet->mergeCells("{$start}{$r}:{$end}{$r}");
+                $sheet->setCellValue("{$start}{$r}", $value);
 
-            $sheet->mergeCells("{$labelCol2Start}{$r}:{$labelCol2End}{$r}");
-            $sheet->setCellValue("{$labelCol2Start}{$r}", $label2 . ' :');
+                $sheet->getStyle("{$start}{$r}:{$end}{$r}")
+                    ->getFont()
+                    ->setBold(true)
+                    ->setSize(12);
 
-            $sheet->mergeCells("{$valueCol2Start}{$r}:{$valueCol2End}{$r}");
-            $sheet->setCellValue("{$valueCol2Start}{$r}", $value2);
+                $sheet->getStyle("{$start}{$r}:{$end}{$r}")
+                    ->getAlignment()
+                    ->setHorizontal(Alignment::HORIZONTAL_LEFT)
+                    ->setVertical(Alignment::VERTICAL_CENTER)
+                    ->setWrapText(true);
+            }
 
-            $sheet->getStyle("{$labelCol1Start}{$r}:{$labelCol1End}{$r}")
-                ->getFont()->setBold(true)->setSize(12);
-            $sheet->getStyle("{$labelCol1Start}{$r}:{$labelCol1End}{$r}")
-                ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setVertical(Alignment::VERTICAL_CENTER);
-
-            $sheet->getStyle("{$valueCol1Start}{$r}:{$valueCol1End}{$r}")
-                ->getFont()->setBold(true)->setSize(12);
-            $sheet->getStyle("{$valueCol1Start}{$r}:{$valueCol1End}{$r}")
-                ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setVertical(Alignment::VERTICAL_CENTER);
-
-            $sheet->getStyle("{$labelCol2Start}{$r}:{$labelCol2End}{$r}")
-                ->getFont()->setBold(true)->setSize(12);
-            $sheet->getStyle("{$labelCol2Start}{$r}:{$labelCol2End}{$r}")
-                ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setVertical(Alignment::VERTICAL_CENTER);
-
-            $sheet->getStyle("{$valueCol2Start}{$r}:{$valueCol2End}{$r}")
-                ->getFont()->setBold(true)->setSize(12);
-            $sheet->getStyle("{$valueCol2Start}{$r}:{$valueCol2End}{$r}")
-                ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setVertical(Alignment::VERTICAL_CENTER);
-
-            $sheet->getRowDimension($r)->setRowHeight(26);
+            $sheet->getRowDimension($r)->setRowHeight(30);
         }
 
         return $row + count($pairs) + 1;
@@ -288,104 +271,118 @@ class LaporanPengendalianProdukDepanSheet implements
 
     protected function buildBahanBaku($sheet, int $row): int
     {
-        $this->sectionTitle($sheet, $row, 'A. DATA BAHAN BAKU', 'A', 'N');
+        $this->sectionTitle($sheet, $row, 'A. DATA BAHAN BAKU', 'A', 'P');
 
         $row++;
 
-        $spans = [
-            ['A', 'F'],
-            ['G', 'J'],
-            ['K', 'N'],
+        $columns = [
+            'No. PO',
+            'Cost Center Name',
+            'Material',
+            'Jumlah Bag',
+            'Jumlah Kg',
         ];
 
-        $headers = ['MATERIAL', 'JUMLAH BAG', 'JUMLAH KG'];
+        $spans = $this->distributeColumns(count($columns));
 
-        foreach ($headers as $i => $label) {
-            [$c1, $c2] = $spans[$i];
+        foreach ($columns as $i => $label) {
+            [$start, $end] = $spans[$i];
 
-            $sheet->mergeCells("{$c1}{$row}:{$c2}{$row}");
-            $sheet->setCellValue("{$c1}{$row}", $label);
+            if ($start !== $end) {
+                $sheet->mergeCells("{$start}{$row}:{$end}{$row}");
+            }
+
+            $sheet->setCellValue("{$start}{$row}", $label);
         }
 
         $this->styleRow($sheet, $row, 12, true);
-
-        $sheet->getRowDimension($row)->setRowHeight(28);
+        $sheet->getRowDimension($row)->setRowHeight(36);
 
         $row++;
 
         $bahanBakus = $this->productionBatch->bahanBakus;
 
         if ($bahanBakus->isEmpty()) {
-            $this->emptyBlockRow($sheet, $row, 'A', 'N');
+            $this->emptyBlockRow($sheet, $row, 'A', 'P');
 
-            $row++;
-
-            return $row + 1;
+            return $row + 2;
         }
 
         foreach ($bahanBakus as $bahanBaku) {
             $values = [
+                $bahanBaku->no_po ?? $this->productionBatch->no_po ?? '-',
+                $bahanBaku->cost_center_name ?? $this->productionBatch->cost_center_name ?? '-',
                 $bahanBaku->material->material_description ?? '-',
                 $bahanBaku->jumlah_bag ?? '-',
                 $this->number($bahanBaku->jumlah_kg) . ' Kg',
             ];
 
             foreach ($values as $i => $value) {
-                [$c1, $c2] = $spans[$i];
+                [$start, $end] = $spans[$i];
 
-                $sheet->mergeCells("{$c1}{$row}:{$c2}{$row}");
-                $sheet->setCellValue("{$c1}{$row}", $value);
+                if ($start !== $end) {
+                    $sheet->mergeCells("{$start}{$row}:{$end}{$row}");
+                }
+
+                $sheet->setCellValue("{$start}{$row}", $value);
             }
 
             $this->styleRow($sheet, $row, 12, false);
-
-            $sheet->getRowDimension($row)->setRowHeight(24);
+            $sheet->getRowDimension($row)->setRowHeight(32);
 
             $row++;
         }
 
-        $totalKg = $bahanBakus->sum(fn ($b) => (float) ($b->jumlah_kg ?? 0));
+        $totalKg = $bahanBakus->sum(
+            fn ($item) => (float) ($item->jumlah_kg ?? 0)
+        );
 
-        $sheet->mergeCells("A{$row}:J{$row}");
+        $sheet->mergeCells("A{$row}:L{$row}");
         $sheet->setCellValue("A{$row}", 'TOTAL');
 
-        $sheet->mergeCells("K{$row}:N{$row}");
-        $sheet->setCellValue("K{$row}", $this->number($totalKg) . ' Kg');
+        $sheet->mergeCells("M{$row}:P{$row}");
+        $sheet->setCellValue("M{$row}", $this->number($totalKg) . ' Kg');
 
-        $sheet->getStyle("A{$row}:N{$row}")
+        $sheet->getStyle("A{$row}:P{$row}")
             ->getBorders()
             ->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getStyle("A{$row}:N{$row}")
+        $sheet->getStyle("A{$row}:P{$row}")
             ->getFont()
             ->setBold(true)
             ->setSize(13);
 
-        $sheet->getStyle("A{$row}:J{$row}")
+        $sheet->getStyle("A{$row}:L{$row}")
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_RIGHT)
             ->setVertical(Alignment::VERTICAL_CENTER);
 
-        $sheet->getStyle("K{$row}:N{$row}")
+        $sheet->getStyle("M{$row}:P{$row}")
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
             ->setVertical(Alignment::VERTICAL_CENTER);
 
-        $sheet->getRowDimension($row)->setRowHeight(28);
+        $sheet->getRowDimension($row)->setRowHeight(32);
 
-        $row++;
-
-        return $row + 1;
+        return $row + 2;
     }
 
     protected function buildDataHasilProduksi($sheet, int $row): int
     {
-        $this->sectionTitle($sheet, $row, 'B. DATA PRODUK & HASIL PRODUKSI', 'A', 'N');
+        $this->sectionTitle(
+            $sheet,
+            $row,
+            'B. DATA PRODUK & HASIL PRODUKSI',
+            'A',
+            'P'
+        );
 
         $row++;
 
         $columns = [
+            'No. PO',
+            'Cost Center Name',
             'Material',
             'Domestik Kg',
             'Further Kg',
@@ -405,33 +402,32 @@ class LaporanPengendalianProdukDepanSheet implements
         $spans = $this->distributeColumns(count($columns));
 
         foreach ($columns as $i => $label) {
-            [$c1, $c2] = $spans[$i];
+            [$start, $end] = $spans[$i];
 
-            if ($c1 !== $c2) {
-                $sheet->mergeCells("{$c1}{$row}:{$c2}{$row}");
+            if ($start !== $end) {
+                $sheet->mergeCells("{$start}{$row}:{$end}{$row}");
             }
 
-            $sheet->setCellValue("{$c1}{$row}", $label);
+            $sheet->setCellValue("{$start}{$row}", $label);
         }
 
-        $this->styleRow($sheet, $row, 12, true);
-
-        $sheet->getRowDimension($row)->setRowHeight(30);
+        $this->styleRow($sheet, $row, 11, true);
+        $sheet->getRowDimension($row)->setRowHeight(44);
 
         $row++;
 
         $dataHasilProduksis = $this->productionBatch->dataHasilProduksis;
 
         if ($dataHasilProduksis->isEmpty()) {
-            $this->emptyBlockRow($sheet, $row, 'A', 'N');
+            $this->emptyBlockRow($sheet, $row, 'A', 'P');
 
-            $row++;
-
-            return $row + 1;
+            return $row + 2;
         }
 
         foreach ($dataHasilProduksis as $item) {
             $values = [
+                $item->no_po ?? $this->productionBatch->no_po ?? '-',
+                $item->cost_center_name ?? $this->productionBatch->cost_center_name ?? '-',
                 $item->material->material_description ?? '-',
                 $this->number($item->domestik_kg),
                 $this->number($item->further_kg),
@@ -444,23 +440,24 @@ class LaporanPengendalianProdukDepanSheet implements
                 $this->number($item->loss_persen) . ' %',
                 $this->number($item->pickup_kg),
                 $this->number($item->pickup_persen) . ' %',
-                ($item->pengecekan_suhu_jam ?? '-') . ' / ' . $this->number($item->pengecekan_suhu_suhu),
-                ($item->packaging_nama_kemasan ?? '-') . ' (' . $this->number($item->packaging_jumlah_kg) . ' Kg)',
+                ($item->pengecekan_suhu_jam ?? '-') . ' / ' .
+                    $this->number($item->pengecekan_suhu_suhu),
+                ($item->packaging_nama_kemasan ?? '-') . ' (' .
+                    $this->number($item->packaging_jumlah_kg) . ' Kg)',
             ];
 
             foreach ($values as $i => $value) {
-                [$c1, $c2] = $spans[$i];
+                [$start, $end] = $spans[$i];
 
-                if ($c1 !== $c2) {
-                    $sheet->mergeCells("{$c1}{$row}:{$c2}{$row}");
+                if ($start !== $end) {
+                    $sheet->mergeCells("{$start}{$row}:{$end}{$row}");
                 }
 
-                $sheet->setCellValue("{$c1}{$row}", $value);
+                $sheet->setCellValue("{$start}{$row}", $value);
             }
 
-            $this->styleRow($sheet, $row, 12, false);
-
-            $sheet->getRowDimension($row)->setRowHeight(26);
+            $this->styleRow($sheet, $row, 11, false);
+            $sheet->getRowDimension($row)->setRowHeight(38);
 
             $row++;
         }
@@ -475,50 +472,46 @@ class LaporanPengendalianProdukDepanSheet implements
         array $columns,
         array $rows
     ): int {
-        $this->sectionTitle($sheet, $row, $title, 'A', 'N');
+        $this->sectionTitle($sheet, $row, $title, 'A', 'P');
 
         $row++;
 
         $spans = $this->distributeColumns(count($columns));
 
         foreach ($columns as $i => $label) {
-            [$c1, $c2] = $spans[$i];
+            [$start, $end] = $spans[$i];
 
-            if ($c1 !== $c2) {
-                $sheet->mergeCells("{$c1}{$row}:{$c2}{$row}");
+            if ($start !== $end) {
+                $sheet->mergeCells("{$start}{$row}:{$end}{$row}");
             }
 
-            $sheet->setCellValue("{$c1}{$row}", $label);
+            $sheet->setCellValue("{$start}{$row}", $label);
         }
 
         $this->styleRow($sheet, $row, 11, true);
-
-        $sheet->getRowDimension($row)->setRowHeight(28);
+        $sheet->getRowDimension($row)->setRowHeight(38);
 
         $row++;
 
         if (empty($rows)) {
-            $this->emptyBlockRow($sheet, $row, 'A', 'N');
+            $this->emptyBlockRow($sheet, $row, 'A', 'P');
 
-            $row++;
-
-            return $row + 1;
+            return $row + 2;
         }
 
         foreach ($rows as $record) {
             foreach ($record as $i => $value) {
-                [$c1, $c2] = $spans[$i];
+                [$start, $end] = $spans[$i];
 
-                if ($c1 !== $c2) {
-                    $sheet->mergeCells("{$c1}{$row}:{$c2}{$row}");
+                if ($start !== $end) {
+                    $sheet->mergeCells("{$start}{$row}:{$end}{$row}");
                 }
 
-                $sheet->setCellValue("{$c1}{$row}", $value);
+                $sheet->setCellValue("{$start}{$row}", $value);
             }
 
             $this->styleRow($sheet, $row, 11, false);
-
-            $sheet->getRowDimension($row)->setRowHeight(26);
+            $sheet->getRowDimension($row)->setRowHeight(34);
 
             $row++;
         }
@@ -528,12 +521,16 @@ class LaporanPengendalianProdukDepanSheet implements
 
     protected function distributeColumns(int $n): array
     {
-        $letters = range('A', 'N');
+        $letters = [];
 
-        $n = max(1, min($n, 14));
+        for ($i = 1; $i <= 16; $i++) {
+            $letters[] = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
+        }
 
-        $base = intdiv(14, $n);
-        $extra = 14 % $n;
+        $n = max(1, min($n, count($letters)));
+
+        $base = intdiv(count($letters), $n);
+        $extra = count($letters) % $n;
         $cursor = 0;
         $spans = [];
 
@@ -553,7 +550,7 @@ class LaporanPengendalianProdukDepanSheet implements
 
     protected function styleRow($sheet, int $row, int $size, bool $header): void
     {
-        $range = "A{$row}:N{$row}";
+        $range = "A{$row}:P{$row}";
 
         $sheet->getStyle($range)
             ->getBorders()
@@ -562,8 +559,8 @@ class LaporanPengendalianProdukDepanSheet implements
 
         $sheet->getStyle($range)
             ->getFont()
-            ->setBold(true)
-            ->setSize($size);
+            ->setSize($size)
+            ->setBold($header);
 
         $sheet->getStyle($range)
             ->getAlignment()
@@ -587,7 +584,6 @@ class LaporanPengendalianProdukDepanSheet implements
         string $endCol
     ): void {
         $sheet->mergeCells("{$startCol}{$row}:{$endCol}{$row}");
-
         $sheet->setCellValue("{$startCol}{$row}", 'Tidak ada data');
 
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
@@ -599,24 +595,24 @@ class LaporanPengendalianProdukDepanSheet implements
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-            ->setVertical(Alignment::VERTICAL_CENTER);
+            ->setVertical(Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
 
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
             ->getBorders()
             ->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getRowDimension($row)->setRowHeight(30);
+        $sheet->getRowDimension($row)->setRowHeight(34);
     }
-
 
     protected function buildApproval($sheet, int $row): void
     {
         $cols = [
-            ['A', 'C', 'Dibuat Oleh', 'Operator'],
-            ['D', 'G', 'Diperiksa Oleh', 'QC'],
-            ['H', 'J', 'Diketahui Oleh', 'Foreman/Lady'],
-            ['K', 'N', 'Disetujui Oleh', 'Supervisor'],
+            ['A', 'D', 'Dibuat Oleh', 'Operator'],
+            ['E', 'H', 'Diperiksa Oleh', 'QC'],
+            ['I', 'L', 'Diketahui Oleh', 'Foreman/Lady'],
+            ['M', 'P', 'Disetujui Oleh', 'Supervisor'],
         ];
 
         foreach ($cols as [$start, $end, $title, $role]) {
@@ -634,10 +630,9 @@ class LaporanPengendalianProdukDepanSheet implements
                 ->setVertical(Alignment::VERTICAL_CENTER);
         }
 
-        $sheet->getRowDimension($row)->setRowHeight(24);
+        $sheet->getRowDimension($row)->setRowHeight(30);
 
         $row++;
-
         $endTtdRow = $row + 3;
 
         foreach ($cols as [$start, $end, $title, $role]) {
@@ -650,7 +645,7 @@ class LaporanPengendalianProdukDepanSheet implements
         }
 
         for ($i = $row; $i <= $endTtdRow; $i++) {
-            $sheet->getRowDimension($i)->setRowHeight(24);
+            $sheet->getRowDimension($i)->setRowHeight(28);
         }
 
         $row = $endTtdRow + 1;
@@ -675,9 +670,8 @@ class LaporanPengendalianProdukDepanSheet implements
                 ->setBorderStyle(Border::BORDER_THIN);
         }
 
-        $sheet->getRowDimension($row)->setRowHeight(24);
+        $sheet->getRowDimension($row)->setRowHeight(30);
     }
-
 
     protected function sectionTitle(
         $sheet,
@@ -687,7 +681,6 @@ class LaporanPengendalianProdukDepanSheet implements
         string $endCol
     ): void {
         $sheet->mergeCells("{$startCol}{$row}:{$endCol}{$row}");
-
         $sheet->setCellValue("{$startCol}{$row}", $title);
 
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
@@ -698,14 +691,15 @@ class LaporanPengendalianProdukDepanSheet implements
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-            ->setVertical(Alignment::VERTICAL_CENTER);
+            ->setVertical(Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
 
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
             ->getBorders()
             ->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getRowDimension($row)->setRowHeight(30);
+        $sheet->getRowDimension($row)->setRowHeight(36);
     }
 
     protected function number($value): string

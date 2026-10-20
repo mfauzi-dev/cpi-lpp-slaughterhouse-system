@@ -14,7 +14,8 @@ class BahanBakuController extends Controller
     {
         $query = ProductionBatch::query()
             ->withCount('bahanBakus')
-            ->withSum('bahanBakus', 'jumlah_kg');
+            ->withSum('bahanBakus', 'jumlah_kg')
+            ->with('bahanBakus.material');
 
         if ($request->filled('date_from')) {
             $query->whereDate('tanggal', '>=', $request->date_from);
@@ -29,11 +30,13 @@ class BahanBakuController extends Controller
         }
 
         if ($request->filled('no_po')) {
-            $query->where('no_po', 'like', '%' . $request->no_po . '%');
+            $query->whereHas('bahanBakus', function ($q) use ($request) {
+                $q->where('no_po', 'like', '%' . $request->no_po . '%');
+            });
         }
 
-        $bahanBakus = $query->whereHas('bahanBakus')
-            ->with('bahanBakus.material')
+        $bahanBakus = $query
+            ->whereHas('bahanBakus')
             ->latest('tanggal')
             ->paginate(10)
             ->withQueryString();
@@ -44,14 +47,39 @@ class BahanBakuController extends Controller
         );
     }
 
-    public function managerDetail($id)
+    public function managerDetail(Request $request, $id)
     {
-        $production = ProductionBatch::with('bahanBakus.material')
-            ->findOrFail($id);
+        $production = ProductionBatch::findOrFail($id);
+
+        $query = BahanBaku::with('material')
+            ->where('production_batch_id', $production->id);
+
+        if ($request->has('no_po')) {
+            $noPo = $request->query('no_po');
+
+            if ($noPo === '') {
+                $query->where(function ($q) {
+                    $q->whereNull('no_po')
+                        ->orWhere('no_po', '');
+                });
+            } else {
+                $query->where('no_po', $noPo);
+            }
+        }
+
+        $bahanBakus = $query->get();
+
+        $production->setRelation('bahanBakus', $bahanBakus);
+
+        $poGroups = $bahanBakus->groupBy(function ($item) {
+            return $item->no_po ?? '';
+        });
+
+        abort_if($request->has('no_po') && $bahanBakus->isEmpty(), 404);
 
         return view(
             'pages.manager.bahan-baku.detail',
-            compact('production')
+            compact('production', 'poGroups')
         );
     }
 
@@ -59,7 +87,8 @@ class BahanBakuController extends Controller
     {
         $query = ProductionBatch::query()
             ->withCount('bahanBakus')
-            ->withSum('bahanBakus', 'jumlah_kg');
+            ->withSum('bahanBakus', 'jumlah_kg')
+            ->with('bahanBakus.material');
 
         if ($request->filled('date_from')) {
             $query->whereDate('tanggal', '>=', $request->date_from);
@@ -74,11 +103,13 @@ class BahanBakuController extends Controller
         }
 
         if ($request->filled('no_po')) {
-            $query->where('no_po', 'like', '%' . $request->no_po . '%');
+            $query->whereHas('bahanBakus', function ($q) use ($request) {
+                $q->where('no_po', 'like', '%' . $request->no_po . '%');
+            });
         }
 
-        $bahanBakus = $query->whereHas('bahanBakus')
-            ->with('bahanBakus.material')
+        $bahanBakus = $query
+            ->whereHas('bahanBakus')
             ->latest('tanggal')
             ->paginate(10)
             ->withQueryString();
@@ -112,6 +143,8 @@ class BahanBakuController extends Controller
             ->get([
                 'id',
                 'production_batch_id',
+                'cost_center_name',
+                'no_po',
                 'material_id',
                 'jumlah_bag',
                 'jumlah_kg',
@@ -128,11 +161,13 @@ class BahanBakuController extends Controller
                 'integer',
                 'exists:production_batches,id',
             ],
-            'products' => [
-                'required',
-                'array',
-                'min:1',
+            'cost_center_name' => [
+                'nullable',
+                'string',
+                'in:FCHO,FCHS,FCHM,FCHT,FCHR,FCH1,FCH2,FCH3,FCH4,FCH5',
             ],
+            'no_po' => ['nullable', 'string', 'max:255'],
+            'products' => ['required', 'array', 'min:1'],
             'products.*.material_id' => [
                 'required',
                 'integer',
@@ -155,6 +190,8 @@ class BahanBakuController extends Controller
             foreach ($request->products as $product) {
                 BahanBaku::create([
                     'production_batch_id' => $request->production_batch_id,
+                    'cost_center_name' => $request->cost_center_name,
+                    'no_po' => $request->no_po,
                     'material_id' => $product['material_id'],
                     'jumlah_bag' => $product['jumlah_bag'],
                     'jumlah_kg' => $product['jumlah_kg'],
@@ -167,37 +204,96 @@ class BahanBakuController extends Controller
             ->with('success', 'Data bahan baku berhasil ditambahkan.');
     }
 
-    public function detail($id)
+    public function detail(Request $request, $id)
     {
-        $production = ProductionBatch::with('bahanBakus.material')
-            ->findOrFail($id);
+        $production = ProductionBatch::findOrFail($id);
+
+        $query = BahanBaku::with('material')
+            ->where('production_batch_id', $production->id);
+
+        if ($request->has('no_po')) {
+            $noPo = $request->query('no_po');
+
+            if ($noPo === '') {
+                $query->where(function ($q) {
+                    $q->whereNull('no_po')
+                        ->orWhere('no_po', '');
+                });
+            } else {
+                $query->where('no_po', $noPo);
+            }
+        }
+
+        $bahanBakus = $query->get();
+
+        $production->setRelation('bahanBakus', $bahanBakus);
+
+        $poGroups = $bahanBakus->groupBy(function ($item) {
+            return $item->no_po ?? '';
+        });
+
+        abort_if($request->has('no_po') && $bahanBakus->isEmpty(), 404);
 
         return view(
             'pages.operator.bahan-baku.detail',
-            compact('production')
+            compact('production', 'poGroups')
         );
     }
 
     public function bulkDestroy(Request $request)
     {
         $request->validate([
+            'production_batch_id' => [
+                'required',
+                'integer',
+                'exists:production_batches,id',
+            ],
+            'no_po' => ['nullable', 'string', 'max:255'],
             'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['required', 'integer', 'distinct', 'exists:bahan_bakus,id'],
+            'ids.*' => [
+                'required',
+                'integer',
+                'distinct',
+                'exists:bahan_bakus,id',
+            ],
         ]);
 
-        DB::transaction(function () use ($request) {
-            BahanBaku::whereIn('id', $request->ids)->delete();
-        });
+        $query = BahanBaku::where(
+            'production_batch_id',
+            $request->production_batch_id
+        )->whereIn('id', $request->ids);
 
-        return redirect()
-            ->back()
-            ->with('success', 'Data bahan baku yang dipilih berhasil dihapus.');
+        if ($request->filled('no_po')) {
+            $query->where('no_po', $request->no_po);
+        }
+
+        $deleted = $query->delete();
+
+        $url = route(
+            'operator.bahan-baku.detail',
+            $request->production_batch_id
+        );
+
+        if ($request->filled('no_po')) {
+            $url .= '?no_po=' . urlencode($request->no_po);
+        }
+
+        return redirect($url)
+            ->with('success', $deleted . ' data bahan baku berhasil dihapus.');
     }
 
     public function edit($id)
     {
-        $production = ProductionBatch::with('bahanBakus.material')
-            ->findOrFail($id);
+        $bahanBaku = BahanBaku::findOrFail($id);
+
+        $production = ProductionBatch::findOrFail(
+            $bahanBaku->production_batch_id
+        );
+
+        $products = BahanBaku::with('material')
+            ->where('production_batch_id', $bahanBaku->production_batch_id)
+            ->where('no_po', $bahanBaku->no_po)
+            ->get();
 
         $materials = Material::orderBy('material_code')->get([
             'id',
@@ -207,18 +303,14 @@ class BahanBakuController extends Controller
 
         return view(
             'pages.operator.bahan-baku.edit',
-            compact('production', 'materials')
+            compact('production', 'bahanBaku', 'products', 'materials')
         );
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'products' => [
-                'required',
-                'array',
-                'min:1',
-            ],
+            'products' => ['required', 'array', 'min:1'],
             'products.*.material_id' => [
                 'required',
                 'integer',
@@ -226,12 +318,12 @@ class BahanBakuController extends Controller
                 'exists:materials,id',
             ],
             'products.*.jumlah_bag' => [
-                'nullable',
+                'required',
                 'integer',
                 'min:0',
             ],
             'products.*.jumlah_kg' => [
-                'nullable',
+                'required',
                 'numeric',
                 'min:0',
             ],
@@ -240,65 +332,69 @@ class BahanBakuController extends Controller
         DB::beginTransaction();
 
         try {
-            $production = ProductionBatch::findOrFail($id);
+            $bahanBaku = BahanBaku::findOrFail($id);
 
-            $production->bahanBakus()->delete();
+            $productionBatchId = $bahanBaku->production_batch_id;
+            $noPo = $bahanBaku->no_po;
+            $costCenterName = $bahanBaku->cost_center_name;
 
-            $hasDetail = false;
+            BahanBaku::where('production_batch_id', $productionBatchId)
+                ->where('no_po', $noPo)
+                ->delete();
 
-            foreach ($request->products as $row) {
-                $jumlahBag = $row['jumlah_bag'] ?? '';
-                $jumlahKg = $row['jumlah_kg'] ?? '';
-
-                $isFilled = $jumlahBag !== '' || $jumlahKg !== '';
-
-                if ($isFilled) {
-                    $production->bahanBakus()->create([
-                        'material_id' => $row['material_id'],
-                        'jumlah_bag' => $jumlahBag === '' ? 0 : $jumlahBag,
-                        'jumlah_kg' => $jumlahKg === '' ? 0 : $jumlahKg,
-                    ]);
-
-                    $hasDetail = true;
-                }
-            }
-
-            if (!$hasDetail) {
-                throw new \Exception(
-                    'Minimal satu produk harus diisi datanya.'
-                );
+            foreach ($request->products as $product) {
+                BahanBaku::create([
+                    'production_batch_id' => $productionBatchId,
+                    'cost_center_name' => $costCenterName,
+                    'no_po' => $noPo,
+                    'material_id' => $product['material_id'],
+                    'jumlah_bag' => $product['jumlah_bag'],
+                    'jumlah_kg' => $product['jumlah_kg'],
+                ]);
             }
 
             DB::commit();
 
-            return redirect()
-                ->route('operator.bahan-baku.detail', $production->id)
-                ->with(
-                    'success',
-                    'Data bahan baku berhasil diperbarui.'
-                );
+            $url = route(
+                'operator.bahan-baku.detail',
+                $productionBatchId
+            );
+
+            if ($noPo !== null) {
+                $url .= '?no_po=' . urlencode($noPo);
+            }
+
+            return redirect($url)
+                ->with('success', 'Data bahan baku untuk PO berhasil diperbarui.');
         } catch (\Throwable $e) {
             DB::rollBack();
+            report($e);
 
-            return redirect()
-                ->back()
+            return back()
                 ->withInput()
-                ->with(
-                    'error',
-                    'Gagal memperbarui data: ' . $e->getMessage()
-                );
+                ->with('error', 'Gagal memperbarui data bahan baku.');
         }
     }
 
     public function destroy($id)
     {
         $bahanBaku = BahanBaku::findOrFail($id);
+
         $productionBatchId = $bahanBaku->production_batch_id;
+        $noPo = $bahanBaku->no_po;
 
         $bahanBaku->delete();
 
-        return redirect()
-            ->route('operator.bahan-baku.index')
+        $url = route(
+            'operator.bahan-baku.detail',
+            $productionBatchId
+        );
+
+        if ($noPo !== null) {
+            $url .= '?no_po=' . urlencode($noPo);
+        }
+
+        return redirect($url)
             ->with('success', 'Data bahan baku berhasil dihapus.');
     }
 }

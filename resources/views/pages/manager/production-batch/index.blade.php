@@ -69,29 +69,6 @@
 
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label class="filter-label">Cost Center Name</label>
-                                <select name="cost_center_name" class="form-control">
-                                    <option value="">Semua Cost Center</option>
-                                    @foreach (['FCHO', 'FCHS', 'FCHM', 'FCHT', 'FCHR', 'FCH1', 'FCH2', 'FCH3', 'FCH4', 'FCH5'] as $costCenter)
-                                        <option value="{{ $costCenter }}"
-                                            {{ request('cost_center_name') == $costCenter ? 'selected' : '' }}>
-                                            {{ $costCenter }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="filter-label">No. PO</label>
-                                <input type="text" name="no_po" class="form-control" placeholder="Cari nomor PO..."
-                                    value="{{ request('no_po') }}">
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="form-group">
                                 <label class="filter-label">Tanggal Transfer</label>
                                 <input type="date" name="tanggal_transfer" class="form-control"
                                     value="{{ request('tanggal_transfer') }}">
@@ -138,8 +115,6 @@
                                 <th class="text-center">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
-                                <th>Cost Center Name</th>
-                                <th>No. PO</th>
                                 <th>Tanggal Transfer</th>
                                 <th>Tanggal Proses</th>
                                 <th class="text-center">Action</th>
@@ -166,24 +141,6 @@
                                             <span class="badge-soft">
                                                 Shift {{ $productionBatch->shift }}
                                             </span>
-                                        @else
-                                            <span class="value-empty">-</span>
-                                        @endif
-                                    </td>
-
-                                    <td>
-                                        @if ($productionBatch->cost_center_name)
-                                            <span class="badge-soft">
-                                                {{ $productionBatch->cost_center_name }}
-                                            </span>
-                                        @else
-                                            <span class="value-empty">-</span>
-                                        @endif
-                                    </td>
-
-                                    <td>
-                                        @if ($productionBatch->no_po)
-                                            {{ $productionBatch->no_po }}
                                         @else
                                             <span class="value-empty">-</span>
                                         @endif

@@ -34,7 +34,7 @@
                             <div class="col-md-8">
                                 <div class="batch-label">Production Batch</div>
                                 <div class="batch-number">
-                                    {{ $hasilProduksi->productionBatch->no_po ?? '-' }}
+                                    {{ $hasilProduksi->no_po ?? '-' }}
                                 </div>
                                 <div class="batch-product">
                                     Material: {{ $hasilProduksi->material->material_description ?? '-' }}
@@ -71,7 +71,7 @@
                         <div class="col-md-3 mb-3">
                             <div class="info-box">
                                 <div class="info-label">No. PO</div>
-                                <div class="info-value">{{ $hasilProduksi->productionBatch->no_po ?? '-' }}</div>
+                                <div class="info-value">{{ $hasilProduksi->no_po ?? '-' }}</div>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
@@ -120,8 +120,8 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <div class="info-box">
-                                <div class="info-label">ID Hasil Produksi</div>
-                                <div class="info-value">{{ $hasilProduksi->id }}</div>
+                                <div class="info-label">Cost Center Name</div>
+                                <div class="info-value">{{ $hasilProduksi->cost_center_name }}</div>
                             </div>
                         </div>
                     </div>
@@ -178,22 +178,48 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="info-box">
-                                <div class="info-label">Total Bag</div>
-                                <div class="info-value">
-                                    {{ $hasilProduksi->total_bag !== null ? number_format($hasilProduksi->total_bag, 0, ',', '.') . ' bag' : '-' }}
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Total Bag</div>
+                                    <div class="stat-value">
+                                        {{ $hasilProduksi->total_bag !== null
+                                            ? number_format((float) $hasilProduksi->total_bag, 0, ',', '.') . ' bag'
+                                            : '-' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="info-box">
-                                <div class="info-label">Total Berat</div>
-                                <div class="info-value">
-                                    {{ $hasilProduksi->total_kg !== null ? number_format((float) $hasilProduksi->total_kg, 2, ',', '.') . ' kg' : '-' }}
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-weight-hanging"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Total Berat</div>
+                                    <div class="stat-value">
+                                        {{ $hasilProduksi->total_kg !== null
+                                            ? number_format((float) $hasilProduksi->total_kg, 2, ',', '.') . ' kg'
+                                            : '-' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Yield</div>
+                                    <div class="stat-value">
+                                        {{ $hasilProduksi->yield_persen !== null
+                                            ? number_format((float) $hasilProduksi->yield_persen, 2, ',', '.') . '%'
+                                            : '-' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -201,36 +227,59 @@
                 </div>
             </div>
 
+
             <div class="card mb-4">
                 <div class="card-header">
                     <h4><span class="step-badge">3</span> Loss & Pickup</h4>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 col-lg-3 mb-3">
                             <div class="stat-card">
-                                <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
                                 <div>
                                     <div class="stat-label">Loss</div>
                                     <div class="stat-value">
                                         {{ $hasilProduksi->loss_kg !== null ? number_format((float) $hasilProduksi->loss_kg, 2, ',', '.') . ' kg' : '-' }}
                                     </div>
-                                    <div class="stat-label mt-2">Persentase Loss</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-percent"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Persentase Loss</div>
                                     <div class="stat-value">
                                         {{ $hasilProduksi->loss_persen !== null ? number_format((float) $hasilProduksi->loss_persen, 2, ',', '.') . '%' : '-' }}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 col-lg-3 mb-3">
                             <div class="stat-card">
-                                <div class="stat-icon"><i class="fas fa-hand-holding"></i></div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-hand-holding"></i>
+                                </div>
                                 <div>
                                     <div class="stat-label">Pickup</div>
                                     <div class="stat-value">
                                         {{ $hasilProduksi->pickup_kg !== null ? number_format((float) $hasilProduksi->pickup_kg, 2, ',', '.') . ' kg' : '-' }}
                                     </div>
-                                    <div class="stat-label mt-2">Persentase Pickup</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-percent"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Persentase Pickup</div>
                                     <div class="stat-value">
                                         {{ $hasilProduksi->pickup_persen !== null ? number_format((float) $hasilProduksi->pickup_persen, 2, ',', '.') . '%' : '-' }}
                                     </div>
@@ -240,6 +289,7 @@
                     </div>
                 </div>
             </div>
+
 
             <div class="card mb-4">
                 <div class="card-header">

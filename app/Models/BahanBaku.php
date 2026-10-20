@@ -11,6 +11,8 @@ class BahanBaku extends Model
 
     protected $fillable = [
         'production_batch_id',
+        'cost_center_name',
+        'no_po',
         'material_id',
         'jumlah_bag',
         'jumlah_kg',

@@ -138,10 +138,10 @@
                                         {{ $hasilProduksi->productionBatch?->shift ? 'Shift ' . $hasilProduksi->productionBatch->shift : '-' }}
                                     </td>
                                     <td>
-                                        {{ $hasilProduksi->productionBatch?->cost_center_name ?? '-' }}
+                                        {{ $hasilProduksi->cost_center_name ?? '-' }}
                                     </td>
                                     <td>
-                                        {{ $hasilProduksi->productionBatch?->no_po ?? '-' }}
+                                        {{ $hasilProduksi->no_po ?? '-' }}
                                     </td>
                                     <td>
                                         {{ $hasilProduksi->material?->material_description ?? '-' }}

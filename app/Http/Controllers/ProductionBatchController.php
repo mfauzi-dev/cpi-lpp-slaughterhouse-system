@@ -14,7 +14,13 @@ class ProductionBatchController extends Controller
     {
         $productionBatches = ProductionBatch::whereDate('tanggal', $date)
             ->latest('id')
-            ->get();
+            ->get([
+                'id',
+                'tanggal',
+                'shift',
+                'tanggal_transfer',
+                'tanggal_proses',
+            ]);
 
         return response()->json($productionBatches);
     }
@@ -143,12 +149,6 @@ class ProductionBatchController extends Controller
             'absen_worker' => ['nullable', 'integer', 'min:0'],
             'tanggal_transfer' => ['nullable', 'date'],
             'tanggal_proses' => ['nullable', 'date'],
-            'cost_center_name' => [
-                'nullable',
-                'string',
-                'in:FCHO,FCHS,FCHM,FCHT,FCHR,FCH1,FCH2,FCH3,FCH4,FCH5',
-            ],
-            'no_po' => ['nullable', 'string', 'max:255'],
         ]);
 
         DB::beginTransaction();
@@ -191,12 +191,6 @@ class ProductionBatchController extends Controller
             'absen_worker' => ['nullable', 'integer', 'min:0'],
             'tanggal_transfer' => ['nullable', 'date'],
             'tanggal_proses' => ['nullable', 'date'],
-            'cost_center_name' => [
-                'nullable',
-                'string',
-                'in:FCHO,FCHS,FCHM,FCHT,FCHR,FCH1,FCH2,FCH3,FCH4,FCH5',
-            ],
-            'no_po' => ['nullable', 'string', 'max:255'],
         ]);
 
         DB::beginTransaction();

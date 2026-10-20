@@ -11,6 +11,8 @@ class DataHasilProduksi extends Model
 
         protected $fillable = [
         'production_batch_id',
+        'cost_center_name',
+        'no_po',
         'material_id',
         'domestik_kg',
         'further_kg',

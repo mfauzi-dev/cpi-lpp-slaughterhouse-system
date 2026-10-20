@@ -32,10 +32,8 @@
                     <div class="batch-highlight">
                         <div class="row align-items-center">
                             <div class="col-md-8">
-                                <div class="batch-label">Production Batch</div>
-                                <div class="batch-number">
-                                    {{ $hasilProduksi->productionBatch->no_po ?? '-' }}
-                                </div>
+                                <div class="batch-label">No. PO</div>
+                                <div class="batch-number">{{ $hasilProduksi->no_po ?? '-' }}</div>
                                 <div class="batch-product">
                                     Material: {{ $hasilProduksi->material->material_description ?? '-' }}
                                 </div>
@@ -43,7 +41,7 @@
                             <div class="col-md-4 text-md-right mt-3 mt-md-0">
                                 <div class="batch-label">Tanggal Produksi</div>
                                 <div class="batch-number" style="font-size: 1.1rem;">
-                                    {{ optional($hasilProduksi->productionBatch)->tanggal
+                                    {{ $hasilProduksi->productionBatch?->tanggal
                                         ? \Carbon\Carbon::parse($hasilProduksi->productionBatch->tanggal)->format('d M Y')
                                         : '-' }}
                                 </div>
@@ -56,7 +54,7 @@
                             <div class="info-box">
                                 <div class="info-label">Tanggal Produksi</div>
                                 <div class="info-value">
-                                    {{ optional($hasilProduksi->productionBatch)->tanggal
+                                    {{ $hasilProduksi->productionBatch?->tanggal
                                         ? \Carbon\Carbon::parse($hasilProduksi->productionBatch->tanggal)->format('d M Y')
                                         : '-' }}
                                 </div>
@@ -71,7 +69,7 @@
                         <div class="col-md-3 mb-3">
                             <div class="info-box">
                                 <div class="info-label">No. PO</div>
-                                <div class="info-value">{{ $hasilProduksi->productionBatch->no_po ?? '-' }}</div>
+                                <div class="info-value">{{ $hasilProduksi->no_po ?? '-' }}</div>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
@@ -102,7 +100,7 @@
                             <div class="info-box">
                                 <div class="info-label">Tanggal Transfer</div>
                                 <div class="info-value">
-                                    {{ optional($hasilProduksi->productionBatch)->tanggal_transfer
+                                    {{ $hasilProduksi->productionBatch?->tanggal_transfer
                                         ? \Carbon\Carbon::parse($hasilProduksi->productionBatch->tanggal_transfer)->format('d M Y')
                                         : '-' }}
                                 </div>
@@ -112,7 +110,7 @@
                             <div class="info-box">
                                 <div class="info-label">Tanggal Proses</div>
                                 <div class="info-value">
-                                    {{ optional($hasilProduksi->productionBatch)->tanggal_proses
+                                    {{ $hasilProduksi->productionBatch?->tanggal_proses
                                         ? \Carbon\Carbon::parse($hasilProduksi->productionBatch->tanggal_proses)->format('d M Y')
                                         : '-' }}
                                 </div>
@@ -120,8 +118,8 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <div class="info-box">
-                                <div class="info-label">ID Hasil Produksi</div>
-                                <div class="info-value">{{ $hasilProduksi->id }}</div>
+                                <div class="info-label">Cost Center Name</div>
+                                <div class="info-value">{{ $hasilProduksi->cost_center_name ?? '-' }}</div>
                             </div>
                         </div>
                     </div>
@@ -178,22 +176,36 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="info-box">
-                                <div class="info-label">Total Bag</div>
-                                <div class="info-value">
-                                    {{ $hasilProduksi->total_bag !== null ? number_format($hasilProduksi->total_bag, 0, ',', '.') . ' bag' : '-' }}
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                                <div>
+                                    <div class="stat-label">Total Bag</div>
+                                    <div class="stat-value">
+                                        {{ $hasilProduksi->total_bag !== null ? number_format((float) $hasilProduksi->total_bag, 0, ',', '.') . ' bag' : '-' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="info-box">
-                                <div class="info-label">Total Berat</div>
-                                <div class="info-value">
-                                    {{ $hasilProduksi->total_kg !== null ? number_format((float) $hasilProduksi->total_kg, 2, ',', '.') . ' kg' : '-' }}
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-weight-hanging"></i></div>
+                                <div>
+                                    <div class="stat-label">Total Berat</div>
+                                    <div class="stat-value">
+                                        {{ $hasilProduksi->total_kg !== null ? number_format((float) $hasilProduksi->total_kg, 2, ',', '.') . ' kg' : '-' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+                                <div>
+                                    <div class="stat-label">Yield</div>
+                                    <div class="stat-value">
+                                        {{ $hasilProduksi->yield_persen !== null ? number_format((float) $hasilProduksi->yield_persen, 2, ',', '.') . '%' : '-' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -207,7 +219,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 col-lg-3 mb-3">
                             <div class="stat-card">
                                 <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
                                 <div>
@@ -215,14 +227,21 @@
                                     <div class="stat-value">
                                         {{ $hasilProduksi->loss_kg !== null ? number_format((float) $hasilProduksi->loss_kg, 2, ',', '.') . ' kg' : '-' }}
                                     </div>
-                                    <div class="stat-label mt-2">Persentase Loss</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-percent"></i></div>
+                                <div>
+                                    <div class="stat-label">Persentase Loss</div>
                                     <div class="stat-value">
                                         {{ $hasilProduksi->loss_persen !== null ? number_format((float) $hasilProduksi->loss_persen, 2, ',', '.') . '%' : '-' }}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 col-lg-3 mb-3">
                             <div class="stat-card">
                                 <div class="stat-icon"><i class="fas fa-hand-holding"></i></div>
                                 <div>
@@ -230,7 +249,14 @@
                                     <div class="stat-value">
                                         {{ $hasilProduksi->pickup_kg !== null ? number_format((float) $hasilProduksi->pickup_kg, 2, ',', '.') . ' kg' : '-' }}
                                     </div>
-                                    <div class="stat-label mt-2">Persentase Pickup</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-percent"></i></div>
+                                <div>
+                                    <div class="stat-label">Persentase Pickup</div>
                                     <div class="stat-value">
                                         {{ $hasilProduksi->pickup_persen !== null ? number_format((float) $hasilProduksi->pickup_persen, 2, ',', '.') . '%' : '-' }}
                                     </div>
@@ -264,7 +290,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="info-box">
@@ -289,7 +314,7 @@
                     <div class="d-flex justify-content-between align-items-center flex-wrap">
                         <div class="section-info mb-2 mb-md-0">
                             <i class="fas fa-info-circle"></i>
-                            Detail data hasil produksi.
+                            Informasi detail hasil produksi.
                         </div>
                         <div class="action-buttons">
                             <a href="{{ route('manager.hasil-produksi.index') }}" class="btn btn-ghost">

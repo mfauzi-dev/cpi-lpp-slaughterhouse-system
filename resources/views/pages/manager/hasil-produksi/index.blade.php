@@ -39,7 +39,6 @@
                     Filter Data
                 </h4>
             </div>
-
             <div class="card-body">
                 <form method="GET" action="{{ route('manager.hasil-produksi.index') }}">
                     <div class="row">
@@ -50,14 +49,12 @@
                                     value="{{ request('date_from') }}">
                             </div>
                         </div>
-
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="filter-label">Tanggal Sampai</label>
                                 <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
                             </div>
                         </div>
-
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="filter-label">Shift</label>
@@ -69,7 +66,6 @@
                                 </select>
                             </div>
                         </div>
-
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="filter-label">No. PO</label>
@@ -84,7 +80,6 @@
                             <i class="fas fa-search mr-1"></i>
                             Tampilkan
                         </button>
-
                         <a href="{{ route('manager.hasil-produksi.index') }}" class="btn btn-ghost">
                             <i class="fas fa-sync-alt mr-1"></i>
                             Reset
@@ -101,7 +96,6 @@
                     Data Hasil Produksi
                 </h4>
             </div>
-
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-bordered table-wide">
@@ -116,43 +110,28 @@
                                 <th class="text-center" width="100">Action</th>
                             </tr>
                         </thead>
-
                         <tbody>
                             @forelse ($hasilProduksis as $index => $hasilProduksi)
                                 <tr>
                                     <td class="text-center">
                                         {{ $hasilProduksis->firstItem() + $index }}
                                     </td>
-
                                     <td>
                                         {{ $hasilProduksi->productionBatch?->tanggal
                                             ? \Carbon\Carbon::parse($hasilProduksi->productionBatch->tanggal)->format('d/m/Y')
                                             : '-' }}
                                     </td>
-
                                     <td>
                                         {{ $hasilProduksi->productionBatch?->shift ? 'Shift ' . $hasilProduksi->productionBatch->shift : '-' }}
                                     </td>
-
-                                    <td>
-                                        {{ $hasilProduksi->productionBatch?->cost_center_name ?? '-' }}
-                                    </td>
-
-                                    <td>
-                                        {{ $hasilProduksi->productionBatch?->no_po ?? '-' }}
-                                    </td>
-
-                                    <td>
-                                        {{ $hasilProduksi->material?->material_description ?? '-' }}
-                                    </td>
-
+                                    <td>{{ $hasilProduksi->cost_center_name ?? '-' }}</td>
+                                    <td>{{ $hasilProduksi->no_po ?? '-' }}</td>
+                                    <td>{{ $hasilProduksi->material?->material_description ?? '-' }}</td>
                                     <td class="text-center">
-                                        <div class="action-buttons">
-                                            <a href="{{ route('manager.hasil-produksi.detail', $hasilProduksi->id) }}"
-                                                class="btn btn-outline-info" title="Detail">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        </div>
+                                        <a href="{{ route('manager.hasil-produksi.detail', $hasilProduksi->id) }}"
+                                            class="btn btn-outline-info" title="Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             @empty
@@ -169,7 +148,6 @@
                     </table>
                 </div>
             </div>
-
             <div class="card-footer bg-white border-top">
                 {{ $hasilProduksis->withQueryString()->links() }}
             </div>

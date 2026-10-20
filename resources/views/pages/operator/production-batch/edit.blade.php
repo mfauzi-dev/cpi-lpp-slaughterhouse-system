@@ -111,38 +111,6 @@
 
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="filter-label">Cost Center Name</label>
-                                    <select name="cost_center_name"
-                                        class="form-control @error('cost_center_name') is-invalid @enderror">
-                                        <option value="">Pilih Cost Center</option>
-                                        @foreach (['FCHO', 'FCHS', 'FCHM', 'FCHT', 'FCHR', 'FCH1', 'FCH2', 'FCH3', 'FCH4', 'FCH5'] as $costCenter)
-                                            <option value="{{ $costCenter }}"
-                                                {{ old('cost_center_name', $productionBatch->cost_center_name) == $costCenter ? 'selected' : '' }}>
-                                                {{ $costCenter }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('cost_center_name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="filter-label">No. PO</label>
-                                    <input type="text" name="no_po"
-                                        class="form-control @error('no_po') is-invalid @enderror"
-                                        value="{{ old('no_po', $productionBatch->no_po) }}" placeholder="Masukkan nomor PO"
-                                        maxlength="255">
-                                    @error('no_po')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group">
                                     <label class="filter-label">Absen Worker</label>
                                     <input type="number" name="absen_worker"
                                         class="form-control @error('absen_worker') is-invalid @enderror"
