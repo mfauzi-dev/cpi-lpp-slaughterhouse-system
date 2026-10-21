@@ -37,7 +37,7 @@
                 @csrf
                 @method('PUT')
 
-                <input type="hidden" name="production_batch_id"
+                <input type="hidden" name="production_batch_id" id="production_batch_id"
                     value="{{ old('production_batch_id', $metalDetector->production_batch_id) }}">
 
                 <div class="card mb-4">
@@ -50,28 +50,20 @@
 
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Tanggal Produksi</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ $metalDetector->productionBatch?->tanggal ? $metalDetector->productionBatch->tanggal->format('d-m-Y') : '-' }}"
+                                    <label class="filter-label">Tanggal Produksi</label>
+                                    <input type="date" class="form-control"
+                                        value="{{ $metalDetector->productionBatch?->tanggal ? \Carbon\Carbon::parse($metalDetector->productionBatch->tanggal)->format('Y-m-d') : '' }}"
                                         disabled>
                                 </div>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Shift</label>
+                                    <label class="filter-label">Shift</label>
                                     <input type="text" class="form-control"
                                         value="{{ $metalDetector->productionBatch?->shift ?? '-' }}" disabled>
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>No. PO</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ $metalDetector->productionBatch?->no_po ?? '-' }}" disabled>
                                 </div>
                             </div>
                         </div>
@@ -79,19 +71,10 @@
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <div class="info-box">
-                                    <div class="info-label">Cost Center Name</div>
-                                    <div class="info-value">
-                                        {{ $metalDetector->productionBatch?->cost_center_name ?? '-' }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <div class="info-box">
                                     <div class="info-label">Tanggal Transfer</div>
                                     <div class="info-value">
                                         {{ $metalDetector->productionBatch?->tanggal_transfer
-                                            ? $metalDetector->productionBatch->tanggal_transfer->format('d-m-Y')
+                                            ? \Carbon\Carbon::parse($metalDetector->productionBatch->tanggal_transfer)->format('d-m-Y')
                                             : '-' }}
                                     </div>
                                 </div>
@@ -102,24 +85,18 @@
                                     <div class="info-label">Tanggal Proses</div>
                                     <div class="info-value">
                                         {{ $metalDetector->productionBatch?->tanggal_proses
-                                            ? $metalDetector->productionBatch->tanggal_proses->format('d-m-Y')
+                                            ? \Carbon\Carbon::parse($metalDetector->productionBatch->tanggal_proses)->format('d-m-Y')
                                             : '-' }}
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="batch-summary" id="production-summary">
-                            <div class="row">
-                                <div class="col-md-6 mb-2 mb-md-0">
-                                    <i class="fas fa-boxes"></i>
-                                    Jumlah Jenis Bahan Baku:
-                                    <strong id="info_jumlah_produk">Memuat...</strong>
-                                </div>
-                                <div class="col-md-6">
-                                    <i class="fas fa-weight-hanging"></i>
-                                    Total Berat Bahan Baku:
-                                    <strong id="info_total_kg">Memuat...</strong>
+                            <div class="col-md-4 mb-3">
+                                <div class="info-box">
+                                    <div class="info-label">Jumlah Pekerja</div>
+                                    <div class="info-value">
+                                        {{ $metalDetector->productionBatch?->absen_worker ?? 0 }} orang
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -315,18 +292,16 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            if ($.fn.select2) {
-                $('.select2').select2({
-                    width: '100%',
-                    placeholder: 'Pilih opsi',
-                    allowClear: true
-                });
-            }
+            $('.select2').select2({
+                width: '100%',
+                placeholder: 'Pilih opsi',
+                allowClear: true
+            });
 
-            const batchId = @json(old('production_batch_id', $metalDetector->production_batch_id));
+            const batchId = $('#production_batch_id').val();
 
             if (!batchId) {
-                $('#info_jumlah_produk').text('0');
+                $('#info_jumlah_produk').text('0 jenis');
                 $('#info_total_kg').text('0,00 KG');
                 return;
             }

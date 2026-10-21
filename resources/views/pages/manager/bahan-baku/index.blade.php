@@ -69,14 +69,6 @@
                                 </select>
                             </div>
                         </div>
-
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="filter-label">No. PO</label>
-                                <input type="text" name="no_po" class="form-control" placeholder="Cari nomor PO"
-                                    value="{{ request('no_po') }}">
-                            </div>
-                        </div>
                     </div>
 
                     <div class="d-flex align-items-center flex-wrap" style="gap: .5rem;">
@@ -164,7 +156,7 @@
                                             <div class="action-buttons">
                                                 <a href="{{ route('manager.bahan-baku.detail', [$bahanBaku->id, 'no_po' => $poNumber]) }}"
                                                     class="btn btn-outline-info" title="Lihat Detail">
-                                                    <i class="fas fa-eye"></i>
+                                                    Lihat Detail
                                                 </a>
                                             </div>
                                         </td>

@@ -34,7 +34,7 @@
                             <div class="col-md-8">
                                 <div class="batch-label">Production Batch</div>
                                 <div class="batch-number">
-                                    {{ $metalDetector->productionBatch->no_po ?? '-' }}
+                                    Shift {{ $metalDetector->productionBatch->shift ?? '-' }}
                                 </div>
                                 <div class="batch-product">
                                     Product:

@@ -77,13 +77,6 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="filter-label">No. PO</label>
-                                <input type="text" name="no_po" class="form-control" placeholder="Cari No. PO..."
-                                    value="{{ request('no_po') }}">
-                            </div>
-                        </div>
                     </div>
 
                     <div class="d-flex align-items-center" style="gap: .5rem;">
@@ -117,8 +110,6 @@
                                 <th class="text-center" width="60">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
-                                <th>No. PO</th>
-                                <th>Cost Center Name</th>
                                 <th>Mesin</th>
                                 <th class="text-center" width="150">Action</th>
                             </tr>
@@ -139,8 +130,6 @@
                                             ? 'Shift ' . $rekapitulasiProduksi->productionBatch->shift
                                             : '-' }}
                                     </td>
-                                    <td>{{ $rekapitulasiProduksi->productionBatch?->no_po ?? '-' }}</td>
-                                    <td>{{ $rekapitulasiProduksi->productionBatch?->cost_center_name ?? '-' }}</td>
                                     <td>{{ $rekapitulasiProduksi->mesin ?? '-' }}</td>
                                     <td class="text-center">
                                         <div class="action-buttons">
@@ -170,7 +159,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7">
+                                    <td colspan="5">
                                         <div class="empty-state">
                                             <i class="fas fa-clipboard-list d-block"></i>
                                             <div>Belum ada data rekapitulasi produksi dan monitoring mesin.</div>

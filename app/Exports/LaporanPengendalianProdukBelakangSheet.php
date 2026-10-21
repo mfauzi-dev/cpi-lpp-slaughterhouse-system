@@ -39,20 +39,21 @@ class LaporanPengendalianProdukBelakangSheet implements
     public function columnWidths(): array
     {
         return [
-            'A' => 22, // Nama Produk
-            'B' => 14, // No. Program
-            'C' => 11, // Fe - Depan
-            'D' => 11, // Fe - Tengah
-            'E' => 11, // Fe - Belakang
-            'F' => 11, // Non-Fe - Depan
-            'G' => 11, // Non-Fe - Tengah
-            'H' => 11, // Non-Fe - Belakang
-            'I' => 11, // SUS 316 - Depan
-            'J' => 11, // SUS 316 - Tengah
-            'K' => 11, // SUS 316 - Belakang
-            'L' => 14, // In
-            'M' => 14, // Out
-            'N' => 22, // Keterangan
+            'A' => 12,
+            'B' => 24,
+            'C' => 14,
+            'D' => 12,
+            'E' => 12,
+            'F' => 12,
+            'G' => 12,
+            'H' => 12,
+            'I' => 12,
+            'J' => 12,
+            'K' => 12,
+            'L' => 12,
+            'M' => 14,
+            'N' => 14,
+            'O' => 24,
         ];
     }
 
@@ -65,13 +66,24 @@ class LaporanPengendalianProdukBelakangSheet implements
                 $this->setupPage($sheet);
                 $this->buildHeader($sheet);
 
-                $row = 6;
-
+                $row = 10;
                 $row = $this->buildMetalDetector($sheet, $row);
+                $row = $this->buildLegend($sheet, $row);
 
-                $this->buildLegend($sheet, $row);
                 $this->buildApproval($sheet, $row + 2);
 
+                $lastRow = $sheet->getHighestRow();
+
+                $sheet->getStyle("A1:O{$lastRow}")
+                    ->getFont()
+                    ->setName('Calibri');
+
+                $sheet->getStyle("A1:O{$lastRow}")
+                    ->getAlignment()
+                    ->setVertical(Alignment::VERTICAL_CENTER)
+                    ->setWrapText(true);
+
+                $sheet->getDefaultRowDimension()->setRowHeight(25);
                 $sheet->setShowGridlines(false);
             },
         ];
@@ -79,151 +91,222 @@ class LaporanPengendalianProdukBelakangSheet implements
 
     protected function setupPage($sheet): void
     {
-        $pageSetup = $sheet->getPageSetup();
-
-        $pageSetup
+        $sheet->getPageSetup()
             ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
             ->setPaperSize(PageSetup::PAPERSIZE_A4)
             ->setFitToWidth(1)
             ->setFitToHeight(0);
 
         $sheet->getPageMargins()
-            ->setTop(0.15)
-            ->setRight(0.15)
-            ->setBottom(0.15)
-            ->setLeft(0.15);
+            ->setTop(0.25)
+            ->setRight(0.2)
+            ->setBottom(0.25)
+            ->setLeft(0.2);
 
-        $sheet->getSheetView()->setZoomScale(85);
+        $sheet->getSheetView()->setZoomScale(75);
     }
 
     protected function buildHeader($sheet): void
     {
-        $sheet->mergeCells('A1:N1');
+        $sheet->mergeCells('A1:O1');
         $sheet->setCellValue('A1', 'PT CHAROEN POKPHAND INDONESIA');
 
-        $sheet->mergeCells('A2:N2');
+        $sheet->mergeCells('A2:O2');
         $sheet->setCellValue('A2', 'FOOD DIVISION');
 
-        $sheet->mergeCells('A3:N3');
-        $sheet->setCellValue('A3', 'LAPORAN PENGENDALIAN PRODUK METAL DETECTOR');
+        $sheet->mergeCells('A4:O4');
+        $sheet->setCellValue('A4', 'LAPORAN PENGENDALIAN PRODUK');
+
+        $sheet->mergeCells('A5:O5');
+        $sheet->setCellValue('A5', 'METAL DETECTOR');
 
         $tanggal = $this->productionBatch->tanggal
             ? $this->productionBatch->tanggal->format('d/m/Y')
             : '-';
 
-        $sheet->mergeCells('A4:G4');
-        $sheet->setCellValue('A4', 'Hari/Tanggal : ' . $tanggal);
+        $sheet->mergeCells('A8:C8');
+        $sheet->setCellValue('A8', 'Hari/Tanggal:');
 
-        $sheet->mergeCells('H4:N4');
-        $sheet->setCellValue('H4', 'Shift : ' . ($this->productionBatch->shift ?? '-'));
+        $sheet->mergeCells('D8:F8');
+        $sheet->setCellValue('D8', $tanggal);
 
-        $sheet->getStyle('A1:N3')
+        $sheet->mergeCells('J8:K8');
+        $sheet->setCellValue('J8', 'Shift:');
+
+        $sheet->mergeCells('L8:O8');
+        $sheet->setCellValue(
+            'L8',
+            $this->productionBatch->shift ?? '-'
+        );
+
+        $sheet->getStyle('A1:O5')
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-            ->setVertical(Alignment::VERTICAL_CENTER);
+            ->setVertical(Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
 
-        $sheet->getStyle('A4:N4')
+        $sheet->getStyle('A8:O8')
             ->getAlignment()
-            ->setHorizontal(Alignment::HORIZONTAL_LEFT)
-            ->setVertical(Alignment::VERTICAL_CENTER);
+            ->setVertical(Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
 
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(18);
-        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(14);
-        $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(15);
-        $sheet->getStyle('A4:N4')->getFont()->setBold(true)->setSize(12);
+        $sheet->getStyle('A1:O2')
+            ->getFont()
+            ->setName('Calibri')
+            ->setItalic(true)
+            ->setSize(12);
 
-        $sheet->getRowDimension(1)->setRowHeight(32);
-        $sheet->getRowDimension(2)->setRowHeight(28);
-        $sheet->getRowDimension(3)->setRowHeight(32);
-        $sheet->getRowDimension(4)->setRowHeight(26);
+        $sheet->getStyle('A4:O5')
+            ->getFont()
+            ->setName('Calibri')
+            ->setBold(true)
+            ->setSize(16);
+
+        $sheet->getStyle('A8:O8')
+            ->getFont()
+            ->setName('Calibri')
+            ->setBold(true)
+            ->setSize(14);
+
+        $sheet->getStyle('D8:F8')
+            ->getBorders()
+            ->getBottom()
+            ->setBorderStyle(Border::BORDER_THIN);
+
+        $sheet->getStyle('L8:O8')
+            ->getBorders()
+            ->getBottom()
+            ->setBorderStyle(Border::BORDER_THIN);
+
+        $sheet->getRowDimension(1)->setRowHeight(26);
+        $sheet->getRowDimension(2)->setRowHeight(26);
+        $sheet->getRowDimension(3)->setRowHeight(10);
+        $sheet->getRowDimension(4)->setRowHeight(34);
+        $sheet->getRowDimension(5)->setRowHeight(34);
+        $sheet->getRowDimension(6)->setRowHeight(12);
+        $sheet->getRowDimension(7)->setRowHeight(12);
+        $sheet->getRowDimension(8)->setRowHeight(30);
+        $sheet->getRowDimension(9)->setRowHeight(12);
     }
 
     protected function buildMetalDetector($sheet, int $row): int
     {
-        $groupRow = $row;
-        $subRow = $row + 1;
+        $topRow = $row;
+        $groupRow = $row + 1;
+        $sizeRow = $row + 2;
+        $subRow = $row + 3;
 
-        $groups = [
-            'A' => ['Nama Produk', 'A', 'A'],
-            'B' => ['No. Program', 'B', 'B'],
-            'C' => ['Fe', 'C', 'E'],
-            'F' => ['Non-Fe', 'F', 'H'],
-            'I' => ['SUS 316', 'I', 'K'],
-            'L' => ['In', 'L', 'L'],
-            'M' => ['Out', 'M', 'M'],
-            'N' => ['Keterangan', 'N', 'N'],
+        $verticalHeaders = [
+            'A' => 'Pukul',
+            'B' => 'Nama Produk',
+            'C' => 'No. Program',
+            'M' => 'In',
+            'N' => 'Out',
+            'O' => 'Keterangan',
         ];
 
-        foreach ($groups as $data) {
-            [$label, $start, $end] = $data;
+        foreach ($verticalHeaders as $col => $label) {
+            $sheet->mergeCells("{$col}{$topRow}:{$col}{$subRow}");
+            $sheet->setCellValue("{$col}{$topRow}", $label);
+        }
 
-            if ($start === $end) {
-                $sheet->mergeCells("{$start}{$groupRow}:{$start}{$subRow}");
-            } else {
-                $sheet->mergeCells("{$start}{$groupRow}:{$end}{$groupRow}");
-            }
+        $sheet->mergeCells("D{$topRow}:L{$topRow}");
+        $sheet->setCellValue("D{$topRow}", 'Standar Spesimen');
 
+        $groups = [
+            ['D', 'F', 'Fe', '3.0 mm'],
+            ['G', 'I', 'Non-Fe', '3.5 mm'],
+            ['J', 'L', 'SUS 316', '4.5 mm'],
+        ];
+
+        foreach ($groups as [$start, $end, $label, $size]) {
+            $sheet->mergeCells("{$start}{$groupRow}:{$end}{$groupRow}");
             $sheet->setCellValue("{$start}{$groupRow}", $label);
+
+            $sheet->mergeCells("{$start}{$sizeRow}:{$end}{$sizeRow}");
+            $sheet->setCellValue("{$start}{$sizeRow}", $size);
         }
 
         $subLabels = [
-            'C' => 'Depan',
-            'D' => 'Tengah',
-            'E' => 'Belakang',
-            'F' => 'Depan',
-            'G' => 'Tengah',
-            'H' => 'Belakang',
-            'I' => 'Depan',
-            'J' => 'Tengah',
-            'K' => 'Belakang',
+            'D' => 'Di depan produk',
+            'E' => 'Di tengah produk',
+            'F' => 'Di belakang produk',
+            'G' => 'Di depan produk',
+            'H' => 'Di tengah produk',
+            'I' => 'Di belakang produk',
+            'J' => 'Di depan produk',
+            'K' => 'Di tengah produk',
+            'L' => 'Di belakang produk',
         ];
 
         foreach ($subLabels as $col => $label) {
             $sheet->setCellValue("{$col}{$subRow}", $label);
         }
 
-        $this->styleRow($sheet, $groupRow, 12, true);
+        $this->styleRow($sheet, $topRow, 14, true);
+        $this->styleRow($sheet, $groupRow, 14, true);
+        $this->styleRow($sheet, $sizeRow, 14, true);
         $this->styleRow($sheet, $subRow, 12, true);
 
-        $sheet->getRowDimension($groupRow)->setRowHeight(24);
-        $sheet->getRowDimension($subRow)->setRowHeight(22);
+        $sheet->getStyle("A{$topRow}:O{$subRow}")
+            ->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
+
+        $sheet->getRowDimension($topRow)->setRowHeight(28);
+        $sheet->getRowDimension($groupRow)->setRowHeight(28);
+        $sheet->getRowDimension($sizeRow)->setRowHeight(28);
+        $sheet->getRowDimension($subRow)->setRowHeight(52);
 
         $row = $subRow + 1;
-
         $metalDetectors = $this->productionBatch->metalDetectors;
 
         if ($metalDetectors->isEmpty()) {
-            $this->emptyBlockRow($sheet, $row, 'A', 'N');
+            $this->emptyBlockRow($sheet, $row, 'A', 'O');
 
             return $row + 2;
         }
 
-        $statusCols = ['C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
+        $statusCols = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+
         $statusFields = [
-            'fe_depan', 'fe_tengah', 'fe_belakang',
-            'non_fe_depan', 'non_fe_tengah', 'non_fe_belakang',
-            'sus_316_depan', 'sus_316_tengah', 'sus_316_belakang',
+            'fe_depan',
+            'fe_tengah',
+            'fe_belakang',
+            'non_fe_depan',
+            'non_fe_tengah',
+            'non_fe_belakang',
+            'sus_316_depan',
+            'sus_316_tengah',
+            'sus_316_belakang',
         ];
 
         foreach ($metalDetectors as $item) {
-            $sheet->setCellValue("A{$row}", $item->material->material_description ?? '-');
-            $sheet->setCellValue("B{$row}", $item->no_program ?? '-');
+            $waktu = $item->created_at
+                ? $item->created_at->format('H:i')
+                : '-';
+
+            $sheet->setCellValue("A{$row}", $waktu);
+            $sheet->setCellValue(
+                "B{$row}",
+                $item->material->material_description ?? '-'
+            );
+            $sheet->setCellValue("C{$row}", $item->no_program ?? '-');
 
             foreach ($statusCols as $i => $col) {
-                $value = $item->{$statusFields[$i]};
+                $value = $item->{$statusFields[$i]} ?? null;
 
                 $sheet->setCellValue("{$col}{$row}", $value ?? '-');
-
                 $this->styleStatusCell($sheet, "{$col}{$row}", $value);
             }
 
-            $sheet->setCellValue("L{$row}", $item->in ?? '-');
-            $sheet->setCellValue("M{$row}", $item->out ?? '-');
-            $sheet->setCellValue("N{$row}", $item->keterangan ?? '-');
+            $sheet->setCellValue("M{$row}", $item->in ?? '-');
+            $sheet->setCellValue("N{$row}", $item->out ?? '-');
+            $sheet->setCellValue("O{$row}", $item->keterangan ?? '-');
 
             $this->styleRow($sheet, $row, 12, false);
-
-            $sheet->getRowDimension($row)->setRowHeight(40);
+            $sheet->getRowDimension($row)->setRowHeight(42);
 
             $row++;
         }
@@ -258,21 +341,29 @@ class LaporanPengendalianProdukBelakangSheet implements
         }
     }
 
-    protected function buildLegend($sheet, int $row): void
+    protected function buildLegend($sheet, int $row): int
     {
-        $sheet->mergeCells("A{$row}:N{$row}");
-
+        $sheet->mergeCells("A{$row}:O{$row}");
         $sheet->setCellValue(
             "A{$row}",
             'Keterangan: Hijau = Terdeteksi, Merah = Tidak terdeteksi.'
         );
 
-        $sheet->getStyle("A{$row}")
+        $sheet->getStyle("A{$row}:O{$row}")
             ->getFont()
+            ->setName('Calibri')
             ->setItalic(true)
             ->setSize(12);
 
-        $sheet->getRowDimension($row)->setRowHeight(20);
+        $sheet->getStyle("A{$row}:O{$row}")
+            ->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_LEFT)
+            ->setVertical(Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
+
+        $sheet->getRowDimension($row)->setRowHeight(28);
+
+        return $row + 1;
     }
 
     protected function buildApproval($sheet, int $row): void
@@ -280,8 +371,8 @@ class LaporanPengendalianProdukBelakangSheet implements
         $cols = [
             ['A', 'C', 'Dibuat Oleh', 'Operator'],
             ['D', 'G', 'Diperiksa Oleh', 'QC'],
-            ['H', 'J', 'Diketahui Oleh', 'Foreman/Lady'],
-            ['K', 'N', 'Disetujui Oleh', 'Supervisor'],
+            ['H', 'K', 'Diketahui Oleh', 'Foreman/Lady'],
+            ['L', 'O', 'Disetujui Oleh', 'Supervisor'],
         ];
 
         foreach ($cols as [$start, $end, $title, $role]) {
@@ -290,8 +381,9 @@ class LaporanPengendalianProdukBelakangSheet implements
 
             $sheet->getStyle("{$start}{$row}:{$end}{$row}")
                 ->getFont()
+                ->setName('Calibri')
                 ->setBold(true)
-                ->setSize(12);
+                ->setSize(14);
 
             $sheet->getStyle("{$start}{$row}:{$end}{$row}")
                 ->getAlignment()
@@ -299,10 +391,9 @@ class LaporanPengendalianProdukBelakangSheet implements
                 ->setVertical(Alignment::VERTICAL_CENTER);
         }
 
-        $sheet->getRowDimension($row)->setRowHeight(24);
+        $sheet->getRowDimension($row)->setRowHeight(32);
 
         $row++;
-
         $endTtdRow = $row + 3;
 
         foreach ($cols as [$start, $end, $title, $role]) {
@@ -315,7 +406,7 @@ class LaporanPengendalianProdukBelakangSheet implements
         }
 
         for ($i = $row; $i <= $endTtdRow; $i++) {
-            $sheet->getRowDimension($i)->setRowHeight(24);
+            $sheet->getRowDimension($i)->setRowHeight(28);
         }
 
         $row = $endTtdRow + 1;
@@ -326,8 +417,9 @@ class LaporanPengendalianProdukBelakangSheet implements
 
             $sheet->getStyle("{$start}{$row}:{$end}{$row}")
                 ->getFont()
+                ->setName('Calibri')
                 ->setBold(true)
-                ->setSize(11);
+                ->setSize(12);
 
             $sheet->getStyle("{$start}{$row}:{$end}{$row}")
                 ->getAlignment()
@@ -340,12 +432,12 @@ class LaporanPengendalianProdukBelakangSheet implements
                 ->setBorderStyle(Border::BORDER_THIN);
         }
 
-        $sheet->getRowDimension($row)->setRowHeight(24);
+        $sheet->getRowDimension($row)->setRowHeight(30);
     }
 
     protected function styleRow($sheet, int $row, int $size, bool $header): void
     {
-        $range = "A{$row}:N{$row}";
+        $range = "A{$row}:O{$row}";
 
         $sheet->getStyle($range)
             ->getBorders()
@@ -354,8 +446,9 @@ class LaporanPengendalianProdukBelakangSheet implements
 
         $sheet->getStyle($range)
             ->getFont()
-            ->setBold(true)
-            ->setSize($size);
+            ->setName('Calibri')
+            ->setSize($size)
+            ->setBold($header);
 
         $sheet->getStyle($range)
             ->getAlignment()
@@ -379,25 +472,26 @@ class LaporanPengendalianProdukBelakangSheet implements
         string $endCol
     ): void {
         $sheet->mergeCells("{$startCol}{$row}:{$endCol}{$row}");
-
         $sheet->setCellValue("{$startCol}{$row}", 'Tidak ada data');
 
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
             ->getFont()
+            ->setName('Calibri')
             ->setItalic(true)
             ->setBold(true)
-            ->setSize(13);
+            ->setSize(14);
 
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-            ->setVertical(Alignment::VERTICAL_CENTER);
+            ->setVertical(Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
 
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
             ->getBorders()
             ->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getRowDimension($row)->setRowHeight(30);
+        $sheet->getRowDimension($row)->setRowHeight(38);
     }
 }

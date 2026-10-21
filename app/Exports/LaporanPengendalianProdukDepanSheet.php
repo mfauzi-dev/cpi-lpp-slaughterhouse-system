@@ -148,7 +148,7 @@ class LaporanPengendalianProdukDepanSheet implements
                     ->setVertical(Alignment::VERTICAL_CENTER)
                     ->setWrapText(true);
 
-                $sheet->getDefaultRowDimension()->setRowHeight(25);
+                $sheet->getDefaultRowDimension()->setRowHeight(28);
                 $sheet->setShowGridlines(false);
             },
         ];
@@ -204,7 +204,7 @@ class LaporanPengendalianProdukDepanSheet implements
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(18);
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(16);
-        $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(13);
+        $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
 
         $sheet->getRowDimension(1)->setRowHeight(36);
         $sheet->getRowDimension(2)->setRowHeight(30);
@@ -271,7 +271,7 @@ class LaporanPengendalianProdukDepanSheet implements
 
     protected function buildBahanBaku($sheet, int $row): int
     {
-        $this->sectionTitle($sheet, $row, 'A. DATA BAHAN BAKU', 'A', 'P');
+        $this->sectionTitle($sheet, $row, 'DATA BAHAN BAKU', 'A', 'P');
 
         $row++;
 
@@ -295,8 +295,8 @@ class LaporanPengendalianProdukDepanSheet implements
             $sheet->setCellValue("{$start}{$row}", $label);
         }
 
-        $this->styleRow($sheet, $row, 12, true);
-        $sheet->getRowDimension($row)->setRowHeight(36);
+        $this->styleRow($sheet, $row, 14, true);
+        $sheet->getRowDimension($row)->setRowHeight(44);
 
         $row++;
 
@@ -337,11 +337,11 @@ class LaporanPengendalianProdukDepanSheet implements
             fn ($item) => (float) ($item->jumlah_kg ?? 0)
         );
 
-        $sheet->mergeCells("A{$row}:L{$row}");
+        $sheet->mergeCells("A{$row}:M{$row}");
         $sheet->setCellValue("A{$row}", 'TOTAL');
 
-        $sheet->mergeCells("M{$row}:P{$row}");
-        $sheet->setCellValue("M{$row}", $this->number($totalKg) . ' Kg');
+        $sheet->mergeCells("N{$row}:P{$row}");
+        $sheet->setCellValue("N{$row}", $this->number($totalKg) . ' Kg');
 
         $sheet->getStyle("A{$row}:P{$row}")
             ->getBorders()
@@ -363,7 +363,7 @@ class LaporanPengendalianProdukDepanSheet implements
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
             ->setVertical(Alignment::VERTICAL_CENTER);
 
-        $sheet->getRowDimension($row)->setRowHeight(32);
+        $sheet->getRowDimension($row)->setRowHeight(34);
 
         return $row + 2;
     }
@@ -373,7 +373,7 @@ class LaporanPengendalianProdukDepanSheet implements
         $this->sectionTitle(
             $sheet,
             $row,
-            'B. DATA PRODUK & HASIL PRODUKSI',
+            'DATA PRODUK & HASIL PRODUKSI',
             'A',
             'P'
         );
@@ -411,8 +411,8 @@ class LaporanPengendalianProdukDepanSheet implements
             $sheet->setCellValue("{$start}{$row}", $label);
         }
 
-        $this->styleRow($sheet, $row, 11, true);
-        $sheet->getRowDimension($row)->setRowHeight(44);
+        $this->styleRow($sheet, $row, 14, true);
+        $sheet->getRowDimension($row)->setRowHeight(58);
 
         $row++;
 
@@ -456,8 +456,8 @@ class LaporanPengendalianProdukDepanSheet implements
                 $sheet->setCellValue("{$start}{$row}", $value);
             }
 
-            $this->styleRow($sheet, $row, 11, false);
-            $sheet->getRowDimension($row)->setRowHeight(38);
+            $this->styleRow($sheet, $row, 12, false);
+            $sheet->getRowDimension($row)->setRowHeight(42);
 
             $row++;
         }
@@ -488,8 +488,8 @@ class LaporanPengendalianProdukDepanSheet implements
             $sheet->setCellValue("{$start}{$row}", $label);
         }
 
-        $this->styleRow($sheet, $row, 11, true);
-        $sheet->getRowDimension($row)->setRowHeight(38);
+        $this->styleRow($sheet, $row, 14, true);
+        $sheet->getRowDimension($row)->setRowHeight(52);
 
         $row++;
 
@@ -510,8 +510,8 @@ class LaporanPengendalianProdukDepanSheet implements
                 $sheet->setCellValue("{$start}{$row}", $value);
             }
 
-            $this->styleRow($sheet, $row, 11, false);
-            $sheet->getRowDimension($row)->setRowHeight(34);
+            $this->styleRow($sheet, $row, 12, false);
+            $sheet->getRowDimension($row)->setRowHeight(38);
 
             $row++;
         }
@@ -603,7 +603,7 @@ class LaporanPengendalianProdukDepanSheet implements
             ->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getRowDimension($row)->setRowHeight(34);
+        $sheet->getRowDimension($row)->setRowHeight(38);
     }
 
     protected function buildApproval($sheet, int $row): void
@@ -657,7 +657,7 @@ class LaporanPengendalianProdukDepanSheet implements
             $sheet->getStyle("{$start}{$row}:{$end}{$row}")
                 ->getFont()
                 ->setBold(true)
-                ->setSize(11);
+                ->setSize(12);
 
             $sheet->getStyle("{$start}{$row}:{$end}{$row}")
                 ->getAlignment()
@@ -686,7 +686,7 @@ class LaporanPengendalianProdukDepanSheet implements
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
             ->getFont()
             ->setBold(true)
-            ->setSize(15);
+            ->setSize(16);
 
         $sheet->getStyle("{$startCol}{$row}:{$endCol}{$row}")
             ->getAlignment()
@@ -699,7 +699,7 @@ class LaporanPengendalianProdukDepanSheet implements
             ->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getRowDimension($row)->setRowHeight(36);
+        $sheet->getRowDimension($row)->setRowHeight(40);
     }
 
     protected function number($value): string

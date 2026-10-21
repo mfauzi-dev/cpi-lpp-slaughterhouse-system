@@ -166,12 +166,12 @@
                                         <div class="action-buttons">
                                             <a href="{{ route('manager.production-batch.export', $productionBatch->id) }}"
                                                 class="btn btn-outline-success" title="Export Excel">
-                                                <i class="fas fa-file-excel"></i>
+                                                Export Excel
                                             </a>
 
                                             <a href="{{ route('manager.production-batch.detail', $productionBatch->id) }}"
                                                 class="btn btn-outline-info" title="Lihat Detail">
-                                                <i class="fas fa-eye"></i>
+                                                Lihat Detail
                                             </a>
                                         </div>
                                     </td>

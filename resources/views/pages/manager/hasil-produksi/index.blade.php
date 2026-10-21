@@ -66,13 +66,6 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="filter-label">No. PO</label>
-                                <input type="text" name="no_po" class="form-control" placeholder="Cari No. PO..."
-                                    value="{{ request('no_po') }}">
-                            </div>
-                        </div>
                     </div>
 
                     <div class="d-flex align-items-center" style="gap: .5rem;">
@@ -130,7 +123,7 @@
                                     <td class="text-center">
                                         <a href="{{ route('manager.hasil-produksi.detail', $hasilProduksi->id) }}"
                                             class="btn btn-outline-info" title="Detail">
-                                            <i class="fas fa-eye"></i>
+                                            Lihat Detail
                                         </a>
                                     </td>
                                 </tr>

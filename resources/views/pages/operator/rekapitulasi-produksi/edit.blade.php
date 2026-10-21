@@ -14,10 +14,6 @@
             </div>
         </div>
 
-        <div class="section-lead">
-            Perbarui informasi produksi, waktu operasional, kapasitas mesin, output, downtime, dan tindakan perbaikan.
-        </div>
-
         <div class="section-body">
             @if ($errors->any())
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -51,28 +47,20 @@
 
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="filter-label">Tanggal Produksi</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ $rekapitulasiProduksi->productionBatch?->tanggal ? $rekapitulasiProduksi->productionBatch->tanggal->format('d-m-Y') : '-' }}"
+                                    <input type="date" class="form-control"
+                                        value="{{ $rekapitulasiProduksi->productionBatch->tanggal ? \Carbon\Carbon::parse($rekapitulasiProduksi->productionBatch->tanggal)->format('Y-m-d') : '' }}"
                                         disabled>
                                 </div>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="filter-label">Shift</label>
                                     <input type="text" class="form-control"
-                                        value="{{ $rekapitulasiProduksi->productionBatch?->shift ?? '-' }}" disabled>
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="filter-label">No. PO</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ $rekapitulasiProduksi->productionBatch?->no_po ?? '-' }}" disabled>
+                                        value="{{ $rekapitulasiProduksi->productionBatch->shift ?? '-' }}" disabled>
                                 </div>
                             </div>
                         </div>
@@ -80,20 +68,9 @@
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <div class="info-box">
-                                    <div class="info-label">Cost Center Name</div>
-                                    <div class="info-value">
-                                        {{ $rekapitulasiProduksi->productionBatch?->cost_center_name ?? '-' }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <div class="info-box">
                                     <div class="info-label">Tanggal Transfer</div>
                                     <div class="info-value">
-                                        {{ $rekapitulasiProduksi->productionBatch?->tanggal_transfer
-                                            ? $rekapitulasiProduksi->productionBatch->tanggal_transfer->format('d-m-Y')
-                                            : '-' }}
+                                        {{ $rekapitulasiProduksi->productionBatch->tanggal_transfer ? \Carbon\Carbon::parse($rekapitulasiProduksi->productionBatch->tanggal_transfer)->format('d-m-Y') : '-' }}
                                     </div>
                                 </div>
                             </div>
@@ -102,62 +79,46 @@
                                 <div class="info-box">
                                     <div class="info-label">Tanggal Proses</div>
                                     <div class="info-value">
-                                        {{ $rekapitulasiProduksi->productionBatch?->tanggal_proses
-                                            ? $rekapitulasiProduksi->productionBatch->tanggal_proses->format('d-m-Y')
-                                            : '-' }}
+                                        {{ $rekapitulasiProduksi->productionBatch->tanggal_proses ? \Carbon\Carbon::parse($rekapitulasiProduksi->productionBatch->tanggal_proses)->format('d-m-Y') : '-' }}
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="batch-summary" id="production-summary">
-                            <div class="row">
-                                <div class="col-md-6 mb-2 mb-md-0">
-                                    <i class="fas fa-boxes"></i>
-                                    Jumlah Jenis Bahan Baku:
-                                    <strong id="info_jumlah_produk">Memuat...</strong>
-                                </div>
-                                <div class="col-md-6">
-                                    <i class="fas fa-weight-hanging"></i>
-                                    Total Berat Bahan Baku:
-                                    <strong id="info_total_kg">Memuat...</strong>
+                            <div class="col-md-4 mb-3">
+                                <div class="info-box">
+                                    <div class="info-label">Jumlah Pekerja</div>
+                                    <div class="info-value">
+                                        {{ $rekapitulasiProduksi->productionBatch->absen_worker ?? 0 }} orang
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="form-group mb-0 mt-3">
-                            <label for="mesin">
-                                Nama Mesin <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="mesin" id="mesin"
-                                class="form-control @error('mesin') is-invalid @enderror"
-                                value="{{ old('mesin', $rekapitulasiProduksi->mesin) }}" placeholder="Masukkan nama mesin"
-                                required>
-                            @error('mesin')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
                     </div>
                 </div>
 
                 <div class="card card-accent mb-4">
                     <div class="card-header">
-                        <h4>
-                            <span class="step-badge">2</span>
-                            Waktu Operasional dan Kapasitas
-                        </h4>
+                        <h4><span class="step-badge">2</span> Waktu Operasional dan Kapasitas</h4>
                     </div>
                     <div class="card-body">
                         <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="mesin">
+                                    Mesin <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" name="mesin" id="mesin"
+                                    class="form-control @error('mesin') is-invalid @enderror"
+                                    value="{{ old('mesin', $rekapitulasiProduksi->mesin) }}""
+                                    placeholder="Masukkan nama mesin" required>
+                                @error('mesin')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="waktu_start">Waktu Start</label>
-                                    <input type="time" name="waktu_start" id="waktu_start"
-                                        class="form-control @error('waktu_start') is-invalid @enderror"
-                                        value="{{ old(
-                                            'waktu_start',
-                                            $rekapitulasiProduksi->waktu_start ? \Carbon\Carbon::parse($rekapitulasiProduksi->waktu_start)->format('H:i') : '',
-                                        ) }}">
+                                    <input type="time" name="waktu_start" id="waktu_start" class="form-control"
+                                        value="{{ old('waktu_start', $rekapitulasiProduksi->waktu_start ? \Carbon\Carbon::parse($rekapitulasiProduksi->waktu_start)->format('H:i') : '') }}">
                                     @error('waktu_start')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -167,12 +128,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="waktu_stop">Waktu Stop</label>
-                                    <input type="time" name="waktu_stop" id="waktu_stop"
-                                        class="form-control @error('waktu_stop') is-invalid @enderror"
-                                        value="{{ old(
-                                            'waktu_stop',
-                                            $rekapitulasiProduksi->waktu_stop ? \Carbon\Carbon::parse($rekapitulasiProduksi->waktu_stop)->format('H:i') : '',
-                                        ) }}">
+                                    <input type="time" name="waktu_stop" id="waktu_stop" class="form-control"
+                                        value="{{ old('waktu_stop', $rekapitulasiProduksi->waktu_stop ? \Carbon\Carbon::parse($rekapitulasiProduksi->waktu_stop)->format('H:i') : '') }}">
                                     @error('waktu_stop')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -257,10 +214,7 @@
 
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4>
-                            <span class="step-badge">3</span>
-                            Downtime dan Tindakan Perbaikan
-                        </h4>
+                        <h4><span class="step-badge">3</span> Downtime dan Tindakan Perbaikan</h4>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
@@ -312,7 +266,7 @@
                     </a>
                     <button type="submit" class="btn btn-primary mb-2">
                         <i class="fas fa-save mr-1"></i>
-                        Simpan Perubahan
+                        Update Rekapitulasi Produksi
                     </button>
                 </div>
             </form>
@@ -323,37 +277,112 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            const batchId = @json($rekapitulasiProduksi->production_batch_id);
+            const tanggalInput = $('#tanggal_produksi');
+            const shiftSelect = $('#shift_select');
+            const batchIdInput = $('#production_batch_id');
+            const batchMessage = $('#batch_message');
 
-            if (!batchId) {
-                $('#info_jumlah_produk').text('0');
-                $('#info_total_kg').text('0,00 KG');
-                return;
+            let batchRequest = null;
+
+            $('.select2').select2({
+                width: '100%',
+                placeholder: 'Pilih shift',
+                allowClear: true
+            });
+
+            function resetShift(message) {
+                shiftSelect.empty().append(new Option(message, '', true, true));
+                shiftSelect.prop('disabled', true).trigger('change');
+                batchIdInput.val('');
             }
 
-            $.ajax({
-                url: '{{ route('operator.hasil-produksi.get-products') }}',
-                type: 'GET',
-                data: {
-                    production_batch_id: batchId
-                },
-                success: function(response) {
-                    $('#info_jumlah_produk').text(
-                        (response.jumlah_produk ?? 0) + ' jenis'
-                    );
-
-                    $('#info_total_kg').text(
-                        Number(response.total_kg || 0).toLocaleString('id-ID', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }) + ' KG'
-                    );
-                },
-                error: function() {
-                    $('#info_jumlah_produk').text('-');
-                    $('#info_total_kg').text('-');
+            function loadShift(tanggal, selectedBatchId = '') {
+                if (batchRequest) {
+                    batchRequest.abort();
+                    batchRequest = null;
                 }
+
+                resetShift('Memuat shift...');
+                batchMessage.text('Mengambil data shift berdasarkan tanggal produksi.');
+
+                if (!tanggal) {
+                    resetShift('Pilih tanggal terlebih dahulu');
+                    batchMessage.text('Pilih tanggal untuk menampilkan shift yang tersedia.');
+                    return;
+                }
+
+                batchRequest = $.ajax({
+                    url: '/production-batch/by-date/' + encodeURIComponent(tanggal),
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        shiftSelect.empty();
+
+                        if (!Array.isArray(response) || response.length === 0) {
+                            resetShift('Tidak ada data shift');
+                            batchMessage.text('Tidak ditemukan data produksi pada tanggal tersebut.');
+                            return;
+                        }
+
+                        shiftSelect.append(new Option('Pilih shift', '', true, true));
+
+                        response.forEach(function(batch) {
+                            shiftSelect.append(
+                                new Option(
+                                    'Shift ' + batch.shift,
+                                    batch.id,
+                                    false,
+                                    String(batch.id) === String(selectedBatchId)
+                                )
+                            );
+                        });
+
+                        shiftSelect.prop('disabled', false);
+
+                        if (selectedBatchId && response.some(function(batch) {
+                                return String(batch.id) === String(selectedBatchId);
+                            })) {
+                            shiftSelect.val(String(selectedBatchId));
+                            batchIdInput.val(String(selectedBatchId));
+                        } else {
+                            shiftSelect.val('');
+                            batchIdInput.val('');
+                        }
+
+                        shiftSelect.trigger('change.select2');
+                        batchMessage.text('Pilih shift sesuai data produksi yang tersedia.');
+                    },
+                    error: function(xhr, status) {
+                        if (status === 'abort') {
+                            return;
+                        }
+
+                        resetShift('Gagal memuat shift');
+                        batchMessage.text('Terjadi kesalahan saat mengambil data produksi.');
+                        console.error('Gagal mengambil data production batch:', xhr.responseText);
+                    },
+                    complete: function() {
+                        batchRequest = null;
+                    }
+                });
+            }
+
+            tanggalInput.on('change', function() {
+                loadShift($(this).val());
             });
+
+            shiftSelect.on('change', function() {
+                batchIdInput.val($(this).val() || '');
+            });
+
+            const oldTanggal = tanggalInput.val();
+            const oldBatchId = batchIdInput.val();
+
+            if (oldTanggal) {
+                loadShift(oldTanggal, oldBatchId);
+            } else {
+                resetShift('Pilih tanggal terlebih dahulu');
+            }
         });
     </script>
 @endpush

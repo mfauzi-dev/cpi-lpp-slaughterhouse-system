@@ -69,14 +69,6 @@
                                 </select>
                             </div>
                         </div>
-
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="filter-label">No. PO</label>
-                                <input type="text" name="no_po" class="form-control" placeholder="Cari No. PO..."
-                                    value="{{ request('no_po') }}">
-                            </div>
-                        </div>
                     </div>
 
                     <div class="d-flex align-items-center" style="gap: .5rem;">
@@ -110,8 +102,6 @@
                                 <th class="text-center" width="60">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
-                                <th>No. PO</th>
-                                <th>Cost Center Name</th>
                                 <th>Mesin</th>
                                 <th class="text-center" width="100">Action</th>
                             </tr>
@@ -137,14 +127,6 @@
                                     </td>
 
                                     <td>
-                                        {{ $rekapitulasiProduksi->productionBatch?->no_po ?? '-' }}
-                                    </td>
-
-                                    <td>
-                                        {{ $rekapitulasiProduksi->productionBatch?->cost_center_name ?? '-' }}
-                                    </td>
-
-                                    <td>
                                         {{ $rekapitulasiProduksi->mesin ?? '-' }}
                                     </td>
 
@@ -152,7 +134,7 @@
                                         <div class="action-buttons justify-content-center">
                                             <a href="{{ route('manager.rekapitulasi-produksi.detail', $rekapitulasiProduksi->id) }}"
                                                 class="btn btn-outline-info" title="Detail">
-                                                <i class="fas fa-eye"></i>
+                                                Lihat Detail
                                             </a>
                                         </div>
                                     </td>

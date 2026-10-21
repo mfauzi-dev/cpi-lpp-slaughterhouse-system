@@ -34,15 +34,11 @@
 
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4>
-                            <span class="step-badge">1</span>
-                            Informasi Produksi
-                        </h4>
+                        <h4><span class="step-badge">1</span> Informasi Produksi</h4>
                     </div>
-
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label for="tanggal_produksi">
                                     Tanggal Produksi <span class="text-danger">*</span>
                                 </label>
@@ -54,11 +50,11 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-8 mb-3">
-                                <label for="production_batch_id">
-                                    Production Batch <span class="text-danger">*</span>
+                            <div class="col-md-6 mb-3">
+                                <label for="shift_select">
+                                    Shift <span class="text-danger">*</span>
                                 </label>
-                                <select name="production_batch_id" id="production_batch_id"
+                                <select id="shift_select"
                                     class="form-control select2 @error('production_batch_id') is-invalid @enderror" required
                                     disabled>
                                     <option value="">Pilih tanggal terlebih dahulu</option>
@@ -66,56 +62,14 @@
                                 @error('production_batch_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <small class="form-text text-muted" id="batch_message">
+                                    Pilih tanggal untuk menampilkan shift yang tersedia.
+                                </small>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <div class="info-box">
-                                    <div class="info-label">Shift</div>
-                                    <div class="info-value" id="batch_shift">-</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="info-box">
-                                    <div class="info-label">Cost Center Name</div>
-                                    <div class="info-value" id="batch_cost_center">-</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="info-box">
-                                    <div class="info-label">No. PO</div>
-                                    <div class="info-value" id="batch_no_po">-</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="info-box">
-                                    <div class="info-label">Tanggal Transfer</div>
-                                    <div class="info-value" id="batch_tanggal_transfer">-</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="info-box">
-                                    <div class="info-label">Tanggal Proses</div>
-                                    <div class="info-value" id="batch_tanggal_proses">-</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="batch-summary" id="production-summary" style="display: none;">
-                            <div class="row">
-                                <div class="col-md-6 mb-2 mb-md-0">
-                                    <i class="fas fa-boxes"></i>
-                                    Jumlah Jenis Bahan Baku:
-                                    <strong id="info_jumlah_produk">0</strong>
-                                </div>
-                                <div class="col-md-6">
-                                    <i class="fas fa-weight-hanging"></i>
-                                    Total Berat Bahan Baku:
-                                    <strong id="info_total_kg">0,00 KG</strong>
-                                </div>
-                            </div>
-                        </div>
+                        <input type="hidden" name="production_batch_id" id="production_batch_id"
+                            value="{{ old('production_batch_id') }}">
 
                         <div class="form-group mb-0 mt-3">
                             <label for="material_id">
@@ -140,10 +94,7 @@
 
                 <div class="card card-accent mb-4">
                     <div class="card-header">
-                        <h4>
-                            <span class="step-badge">2</span>
-                            Jumlah Tenaga Kerja
-                        </h4>
+                        <h4><span class="step-badge">2</span> Jumlah Tenaga Kerja</h4>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -163,8 +114,7 @@
                                 <div class="form-group">
                                     <label for="worker_direct">Worker Direct</label>
                                     <input type="number" min="0" step="1" name="worker_direct"
-                                        id="worker_direct"
-                                        class="form-control @error('worker_direct') is-invalid @enderror"
+                                        id="worker_direct" class="form-control @error('worker_direct') is-invalid @enderror"
                                         value="{{ old('worker_direct') }}" placeholder="Jumlah tenaga kerja direct">
                                     @error('worker_direct')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -188,10 +138,7 @@
 
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4>
-                            <span class="step-badge">3</span>
-                            Data Produktivitas
-                        </h4>
+                        <h4><span class="step-badge">3</span> Data Produktivitas</h4>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -269,20 +216,24 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            if ($.fn.select2) {
-                $('.select2').select2({
-                    width: '100%',
-                    placeholder: 'Pilih opsi',
-                    allowClear: true
-                });
-            }
+            const tanggalInput = $('#tanggal_produksi');
+            const shiftSelect = $('#shift_select');
+            const batchIdInput = $('#production_batch_id');
+            const batchMessage = $('#batch_message');
+            let batchRequest = null;
+
+            $('.select2').select2({
+                width: '100%',
+                placeholder: 'Pilih opsi',
+                allowClear: true
+            });
 
             function resetProductionInfo() {
-                $('#batch_shift').text('-');
                 $('#batch_cost_center').text('-');
                 $('#batch_no_po').text('-');
                 $('#batch_tanggal_transfer').text('-');
                 $('#batch_tanggal_proses').text('-');
+                $('#batch_absen_worker').text('0 orang');
                 $('#info_jumlah_produk').text('0');
                 $('#info_total_kg').text('0,00 KG');
                 $('#production-summary').hide();
@@ -303,20 +254,21 @@
             }
 
             function updateProductionInfo() {
-                const selected = $('#production_batch_id').find(':selected');
-                const batchId = $('#production_batch_id').val();
+                const selected = shiftSelect.find(':selected');
+                const batchId = shiftSelect.val();
 
                 resetProductionInfo();
+                batchIdInput.val(batchId || '');
 
                 if (!batchId) {
                     return;
                 }
 
-                $('#batch_shift').text(selected.attr('data-shift') || '-');
                 $('#batch_cost_center').text(selected.attr('data-cost-center') || '-');
                 $('#batch_no_po').text(selected.attr('data-no-po') || '-');
                 $('#batch_tanggal_transfer').text(formatDate(selected.attr('data-tanggal-transfer')));
                 $('#batch_tanggal_proses').text(formatDate(selected.attr('data-tanggal-proses')));
+                $('#batch_absen_worker').text((selected.attr('data-absen-worker') || 0) + ' orang');
 
                 $('#production-summary').show();
                 $('#info_jumlah_produk').text('Memuat...');
@@ -344,113 +296,120 @@
                 });
             }
 
-            $('#tanggal_produksi').on('change', function() {
-                const date = $(this).val();
-                const batchSelect = $('#production_batch_id');
-
-                resetProductionInfo();
-
-                batchSelect
-                    .empty()
-                    .append('<option value="">Memuat production batch...</option>')
+            function resetShift(message) {
+                shiftSelect.empty()
+                    .append(new Option(message, '', true, true))
                     .prop('disabled', true)
                     .trigger('change.select2');
 
-                if (!date) {
-                    batchSelect
-                        .empty()
-                        .append('<option value="">Pilih tanggal terlebih dahulu</option>')
-                        .trigger('change.select2');
+                batchIdInput.val('');
+                resetProductionInfo();
+            }
 
+            function loadShift(tanggal, selectedBatchId = '') {
+                if (batchRequest) {
+                    batchRequest.abort();
+                    batchRequest = null;
+                }
+
+                resetShift('Memuat shift...');
+                batchMessage.text('Mengambil data shift berdasarkan tanggal produksi.');
+
+                if (!tanggal) {
+                    resetShift('Pilih tanggal terlebih dahulu');
+                    batchMessage.text('Pilih tanggal untuk menampilkan shift yang tersedia.');
                     return;
                 }
 
-                $.ajax({
-                    url: `{{ url('production-batch/by-date') }}/${date}`,
+                batchRequest = $.ajax({
+                    url: '/production-batch/by-date/' + encodeURIComponent(tanggal),
                     type: 'GET',
+                    dataType: 'json',
                     success: function(response) {
-                        batchSelect
-                            .empty()
-                            .append('<option value="">Pilih Production Batch</option>');
+                        shiftSelect.empty();
 
-                        if (!response.length) {
-                            batchSelect
-                                .append(
-                                    '<option value="">Tidak ada production batch pada tanggal ini</option>'
-                                )
-                                .prop('disabled', true)
-                                .trigger('change.select2');
-
+                        if (!Array.isArray(response) || response.length === 0) {
+                            resetShift('Tidak ada data shift');
+                            batchMessage.text('Tidak ditemukan data produksi pada tanggal tersebut.');
                             return;
                         }
 
+                        shiftSelect.append(new Option('Pilih shift', '', true, true));
+
                         response.forEach(function(batch) {
                             const option = new Option(
-                                `No. PO - ${batch.no_po || '-'}`,
-                                batch.id
+                                'Shift ' + (batch.shift || '-'),
+                                batch.id,
+                                false,
+                                false
                             );
 
-                            $(option).attr('data-shift', batch.shift ?? '');
-                            $(option).attr('data-cost-center', batch.cost_center_name ??
+                            $(option).attr('data-cost-center', batch.cost_center_name || '');
+                            $(option).attr('data-no-po', batch.no_po || '');
+                            $(option).attr('data-tanggal-transfer', batch.tanggal_transfer ||
                                 '');
-                            $(option).attr('data-no-po', batch.no_po ?? '');
-                            $(option).attr('data-tanggal-transfer', batch
-                                .tanggal_transfer ?? '');
-                            $(option).attr('data-tanggal-proses', batch
-                                .tanggal_proses ?? '');
+                            $(option).attr('data-tanggal-proses', batch.tanggal_proses || '');
+                            $(option).attr('data-absen-worker', batch.absen_worker || 0);
 
-                            batchSelect.append(option);
+                            shiftSelect.append(option);
                         });
 
-                        batchSelect
-                            .prop('disabled', false)
-                            .trigger('change.select2');
+                        shiftSelect.prop('disabled', false).trigger('change.select2');
 
-                        const oldBatchId = @json(old('production_batch_id'));
-
-                        if (oldBatchId) {
-                            batchSelect.val(String(oldBatchId)).trigger('change');
+                        if (selectedBatchId) {
+                            shiftSelect.val(String(selectedBatchId)).trigger('change');
                         }
+
+                        batchMessage.text('Pilih shift sesuai data produksi yang tersedia.');
                     },
-                    error: function() {
-                        batchSelect
-                            .empty()
-                            .append('<option value="">Gagal memuat production batch</option>')
-                            .prop('disabled', true)
-                            .trigger('change.select2');
+                    error: function(xhr, status) {
+                        if (status === 'abort') {
+                            return;
+                        }
+
+                        resetShift('Gagal memuat shift');
+                        batchMessage.text('Terjadi kesalahan saat mengambil data produksi.');
+                        console.error('Gagal mengambil data production batch:', xhr.responseText);
+                    },
+                    complete: function() {
+                        batchRequest = null;
                     }
                 });
-            });
-
-            $('#production_batch_id').on('change', updateProductionInfo);
-
-            const oldTanggal = @json(old('tanggal_produksi'));
-
-            if (oldTanggal) {
-                $('#tanggal_produksi').val(oldTanggal).trigger('change');
             }
 
-            // Auto-calculate productivity_indirect & productivity_direct
+            tanggalInput.on('change', function() {
+                loadShift($(this).val());
+            });
+
+            shiftSelect.on('change', updateProductionInfo);
+
+            const oldTanggal = @json(old('tanggal_produksi'));
+            const oldBatchId = @json(old('production_batch_id'));
+
+            if (oldTanggal) {
+                tanggalInput.val(oldTanggal);
+                loadShift(oldTanggal, oldBatchId);
+            }
+
             function calculateProductivity() {
                 const totalWeight = parseFloat($('#total_weight').val()) || 0;
                 const totalTime = parseFloat($('#total_time').val()) || 0;
                 const workerTotal = parseFloat($('#worker_total').val()) || 0;
                 const workerDirect = parseFloat($('#worker_direct').val()) || 0;
 
-                const productivityIndirect = (totalTime > 0 && workerTotal > 0)
-                    ? (totalWeight / totalTime / workerTotal)
-                    : 0;
+                const productivityIndirect = totalTime > 0 && workerTotal > 0 ?
+                    totalWeight / totalTime / workerTotal :
+                    0;
 
-                const productivityDirect = (totalTime > 0 && workerDirect > 0)
-                    ? (totalWeight / totalTime / workerDirect)
-                    : 0;
+                const productivityDirect = totalTime > 0 && workerDirect > 0 ?
+                    totalWeight / totalTime / workerDirect :
+                    0;
 
                 $('#productivity_indirect').val(productivityIndirect.toFixed(2));
                 $('#productivity_direct').val(productivityDirect.toFixed(2));
             }
 
-            $('#total_weight, #total_time, #worker_total, #worker_direct').on('input',
-                calculateProductivity);
+            $('#total_weight, #total_time, #worker_total, #worker_direct').on('input', calculateProductivity);
 
             calculateProductivity();
         });
