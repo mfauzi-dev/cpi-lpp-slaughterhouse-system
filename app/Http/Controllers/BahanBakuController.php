@@ -269,16 +269,7 @@ class BahanBakuController extends Controller
 
         $deleted = $query->delete();
 
-        $url = route(
-            'operator.bahan-baku.detail',
-            $request->production_batch_id
-        );
-
-        if ($request->filled('no_po')) {
-            $url .= '?no_po=' . urlencode($request->no_po);
-        }
-
-        return redirect($url)
+        return redirect()->route('operator.bahan-baku.index')
             ->with('success', $deleted . ' data bahan baku berhasil dihapus.');
     }
 
@@ -385,16 +376,7 @@ class BahanBakuController extends Controller
 
         $bahanBaku->delete();
 
-        $url = route(
-            'operator.bahan-baku.detail',
-            $productionBatchId
-        );
-
-        if ($noPo !== null) {
-            $url .= '?no_po=' . urlencode($noPo);
-        }
-
-        return redirect($url)
+        return redirect()->route('operator.bahan-baku.index')
             ->with('success', 'Data bahan baku berhasil dihapus.');
     }
 }

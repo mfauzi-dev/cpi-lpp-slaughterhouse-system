@@ -12,6 +12,7 @@ class MetalDetector extends Model
     protected $fillable = [
         'production_batch_id',
         'material_id',
+        'pukul',
         'no_program',
         'fe_depan',
         'fe_tengah',

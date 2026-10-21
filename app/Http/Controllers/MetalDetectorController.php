@@ -71,6 +71,7 @@ class MetalDetectorController extends Controller
                 'integer',
                 'exists:materials,id',
             ],
+            'pukul' => ['nullable', 'date_format:H:i'],
             'no_program' => ['nullable', 'string', 'max:255'],
 
             'fe_depan' => ['nullable', 'in:Terdeteksi,Tidak terdeteksi'],
@@ -146,6 +147,7 @@ class MetalDetectorController extends Controller
                 'integer',
                 'exists:materials,id',
             ],
+            'pukul' => ['nullable', 'date_format:H:i'],
             'no_program' => ['nullable', 'string', 'max:255'],
 
             'fe_depan' => ['nullable', 'in:Terdeteksi,Tidak terdeteksi'],

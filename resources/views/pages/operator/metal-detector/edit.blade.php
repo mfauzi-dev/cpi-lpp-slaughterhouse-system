@@ -130,6 +130,19 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        <div class="form-group mb-0 mt-3">
+                            <label for="pukul">
+                                Pukul Pemeriksaan <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" name="pukul" id="pukul"
+                                class="form-control @error('pukul') is-invalid @enderror"
+                                value="{{ old('pukul', $metalDetector->pukul ? \Carbon\Carbon::parse($metalDetector->pukul)->format('H:i') : '') }}"
+                                required>
+                            @error('pukul')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 

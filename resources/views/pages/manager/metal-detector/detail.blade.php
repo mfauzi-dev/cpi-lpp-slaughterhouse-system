@@ -75,7 +75,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Kode Product</div>
                                 <div class="info-value">
@@ -84,11 +84,20 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="info-box">
                                 <div class="info-label">No Program</div>
                                 <div class="info-value">
                                     {{ $metalDetector->no_program ?: '-' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="info-box">
+                                <div class="info-label">Pukul</div>
+                                <div class="info-value">
+                                    {{ $metalDetector->pukul ? \Carbon\Carbon::parse($metalDetector->pukul)->format('H:i') : '-' }}
                                 </div>
                             </div>
                         </div>

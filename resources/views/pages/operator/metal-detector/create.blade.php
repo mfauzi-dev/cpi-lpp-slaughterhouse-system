@@ -97,7 +97,7 @@
                             @enderror
                         </div>
 
-                        <div class="form-group mb-0">
+                        <div class="form-group">
                             <label for="no_program">No Program</label>
                             <input type="text" name="no_program" id="no_program"
                                 class="form-control @error('no_program') is-invalid @enderror"
@@ -105,6 +105,21 @@
                             @error('no_program')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                        </div>
+
+                        <div class="form-group mb-0">
+                            <label for="pukul">
+                                Pukul Pemeriksaan <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" name="pukul" id="pukul"
+                                class="form-control @error('pukul') is-invalid @enderror" value="{{ old('pukul') }}"
+                                required>
+                            @error('pukul')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="form-text text-muted">
+                                Masukkan jam saat pemeriksaan Metal Detector dilakukan.
+                            </small>
                         </div>
                     </div>
                 </div>

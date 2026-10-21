@@ -283,8 +283,8 @@ class LaporanPengendalianProdukBelakangSheet implements
         ];
 
         foreach ($metalDetectors as $item) {
-            $waktu = $item->created_at
-                ? $item->created_at->format('H:i')
+            $waktu = $item->pukul
+                ? \Carbon\Carbon::parse($item->pukul)->format('H:i')
                 : '-';
 
             $sheet->setCellValue("A{$row}", $waktu);
