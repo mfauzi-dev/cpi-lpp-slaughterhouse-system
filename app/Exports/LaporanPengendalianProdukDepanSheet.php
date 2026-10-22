@@ -79,6 +79,7 @@ class LaporanPengendalianProdukDepanSheet implements
                     'REKAPITULASI PRODUKSI & MONITORING MESIN',
                     [
                         'Mesin',
+                        'Material Bahan Baku',
                         'Waktu Start',
                         'Waktu Stop',
                         'Operation Time',
@@ -91,9 +92,10 @@ class LaporanPengendalianProdukDepanSheet implements
                         'Tindakan Perbaikan',
                         'PIC/Operator',
                     ],
-                    $this->productionBatch->rekapitulasiProduksis
+          $this->productionBatch->rekapitulasiProduksis
                         ->map(fn ($item) => [
                             $item->mesin ?? '-',
+                            $item->bahanBaku->material->material_description ?? '-',
                             $this->time($item->waktu_start),
                             $this->time($item->waktu_stop),
                             $this->number($item->operation_time),
