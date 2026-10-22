@@ -34,8 +34,10 @@
                 @csrf
                 @method('PUT')
 
-                <input type="hidden" name="production_batch_id"
+                <input type="hidden" name="production_batch_id" id="production_batch_id"
                     value="{{ old('production_batch_id', $rekapitulasiProduksi->production_batch_id) }}">
+                <input type="hidden" name="bahan_baku_id" id="bahan_baku_id"
+                    value="{{ old('bahan_baku_id', $rekapitulasiProduksi->bahan_baku_id) }}">
 
                 <div class="card mb-4">
                     <div class="card-header">
@@ -62,6 +64,34 @@
                                     <input type="text" class="form-control"
                                         value="{{ $rekapitulasiProduksi->productionBatch->shift ?? '-' }}" disabled>
                                 </div>
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label for="no_po_bahan_baku_select">
+                                    No. PO (Bahan Baku) <span class="text-danger">*</span>
+                                </label>
+                                <select id="no_po_bahan_baku_select" class="form-control select2" required disabled>
+                                    <option value="">Memuat No. PO...</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    Menentukan daftar bahan baku yang bisa dipilih pada field Material Bahan Baku di
+                                    bawah.
+                                </small>
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label for="bahan_baku_select">
+                                    Material Bahan Baku <span class="text-danger">*</span>
+                                </label>
+                                <select id="bahan_baku_select" class="form-control select2" required disabled>
+                                    <option value="">Pilih No. PO terlebih dahulu</option>
+                                </select>
+                                @error('bahan_baku_id')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">
+                                    Daftar ini mengikuti No. PO bahan baku yang dipilih di atas.
+                                </small>
                             </div>
                         </div>
 
@@ -108,7 +138,7 @@
                                 </label>
                                 <input type="text" name="mesin" id="mesin"
                                     class="form-control @error('mesin') is-invalid @enderror"
-                                    value="{{ old('mesin', $rekapitulasiProduksi->mesin) }}""
+                                    value="{{ old('mesin', $rekapitulasiProduksi->mesin) }}"
                                     placeholder="Masukkan nama mesin" required>
                                 @error('mesin')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -277,112 +307,174 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            const tanggalInput = $('#tanggal_produksi');
-            const shiftSelect = $('#shift_select');
-            const batchIdInput = $('#production_batch_id');
-            const batchMessage = $('#batch_message');
+            const EMPTY_PO_VALUE = '__EMPTY_PO__';
 
-            let batchRequest = null;
+            // Batch sudah fix (gak bisa diganti di form edit), jadi ambil langsung dari hidden input.
+            const batchId = $('#production_batch_id').val();
+
+            // No. PO dari bahan baku yang SAAT INI dipakai record ini (buat preselect).
+            const currentNoPo = @json($rekapitulasiProduksi->bahanBaku->no_po ?? '');
+            const currentBahanBakuId = @json($rekapitulasiProduksi->bahan_baku_id);
+
+            const poSelect = $('#no_po_bahan_baku_select');
+            const bahanBakuSelect = $('#bahan_baku_select');
+            const bahanBakuIdInput = $('#bahan_baku_id');
+
+            let bahanBakuRequest = null;
 
             $('.select2').select2({
                 width: '100%',
-                placeholder: 'Pilih shift',
+                placeholder: 'Pilih opsi',
                 allowClear: true
             });
 
-            function resetShift(message) {
-                shiftSelect.empty().append(new Option(message, '', true, true));
-                shiftSelect.prop('disabled', true).trigger('change');
-                batchIdInput.val('');
+            function resetBahanBaku(message = 'Pilih No. PO terlebih dahulu') {
+                bahanBakuSelect.empty()
+                    .append(new Option(message, '', true, true))
+                    .prop('disabled', true)
+                    .trigger('change');
+
+                bahanBakuIdInput.val('');
             }
 
-            function loadShift(tanggal, selectedBatchId = '') {
-                if (batchRequest) {
-                    batchRequest.abort();
-                    batchRequest = null;
-                }
+            function loadBahanBaku(noPo, selectedBahanBakuId = '') {
+                if (bahanBakuRequest) bahanBakuRequest.abort();
 
-                resetShift('Memuat shift...');
-                batchMessage.text('Mengambil data shift berdasarkan tanggal produksi.');
+                resetBahanBaku('Memuat bahan baku...');
 
-                if (!tanggal) {
-                    resetShift('Pilih tanggal terlebih dahulu');
-                    batchMessage.text('Pilih tanggal untuk menampilkan shift yang tersedia.');
-                    return;
-                }
-
-                batchRequest = $.ajax({
-                    url: '/production-batch/by-date/' + encodeURIComponent(tanggal),
+                bahanBakuRequest = $.ajax({
+                    url: '{{ route('operator.rekapitulasi-produksi.get-bahan-baku-by-po') }}',
                     type: 'GET',
-                    dataType: 'json',
-                    success: function(response) {
-                        shiftSelect.empty();
-
-                        if (!Array.isArray(response) || response.length === 0) {
-                            resetShift('Tidak ada data shift');
-                            batchMessage.text('Tidak ditemukan data produksi pada tanggal tersebut.');
+                    data: {
+                        production_batch_id: batchId,
+                        no_po: noPo
+                    },
+                    success: function(bahanBakus) {
+                        if (!Array.isArray(bahanBakus) || bahanBakus.length === 0) {
+                            resetBahanBaku('Tidak ada bahan baku untuk No. PO ini');
                             return;
                         }
 
-                        shiftSelect.append(new Option('Pilih shift', '', true, true));
+                        bahanBakuSelect.empty().append(new Option('Pilih Material Bahan Baku', ''));
 
-                        response.forEach(function(batch) {
-                            shiftSelect.append(
+                        bahanBakus.forEach(function(item) {
+                            const material = item.material || {};
+                            const kode = material.material_code || '-';
+                            const nama = material.material_description || '-';
+
+                            bahanBakuSelect.append(
                                 new Option(
-                                    'Shift ' + batch.shift,
-                                    batch.id,
+                                    `${kode} - ${nama}`,
+                                    item.id,
                                     false,
-                                    String(batch.id) === String(selectedBatchId)
+                                    String(item.id) === String(selectedBahanBakuId)
                                 )
                             );
                         });
 
-                        shiftSelect.prop('disabled', false);
+                        bahanBakuSelect.prop('disabled', false).trigger('change.select2');
 
-                        if (selectedBatchId && response.some(function(batch) {
-                                return String(batch.id) === String(selectedBatchId);
-                            })) {
-                            shiftSelect.val(String(selectedBatchId));
-                            batchIdInput.val(String(selectedBatchId));
-                        } else {
-                            shiftSelect.val('');
-                            batchIdInput.val('');
+                        if (selectedBahanBakuId) {
+                            bahanBakuSelect.val(String(selectedBahanBakuId)).trigger('change');
                         }
-
-                        shiftSelect.trigger('change.select2');
-                        batchMessage.text('Pilih shift sesuai data produksi yang tersedia.');
                     },
                     error: function(xhr, status) {
-                        if (status === 'abort') {
-                            return;
-                        }
+                        if (status === 'abort') return;
 
-                        resetShift('Gagal memuat shift');
-                        batchMessage.text('Terjadi kesalahan saat mengambil data produksi.');
-                        console.error('Gagal mengambil data production batch:', xhr.responseText);
+                        resetBahanBaku('Gagal memuat bahan baku');
                     },
                     complete: function() {
-                        batchRequest = null;
+                        bahanBakuRequest = null;
                     }
                 });
             }
 
-            tanggalInput.on('change', function() {
-                loadShift($(this).val());
-            });
+            function loadPoList(selectedPo = '') {
+                poSelect.empty()
+                    .append(new Option('Memuat No. PO...', '', true, true))
+                    .prop('disabled', true)
+                    .trigger('change');
 
-            shiftSelect.on('change', function() {
-                batchIdInput.val($(this).val() || '');
-            });
+                if (!batchId) {
+                    poSelect.empty()
+                        .append(new Option('Production batch tidak ditemukan', '', true, true))
+                        .trigger('change');
+                    return;
+                }
 
-            const oldTanggal = tanggalInput.val();
-            const oldBatchId = batchIdInput.val();
+                $.ajax({
+                    url: '{{ route('operator.rekapitulasi-produksi.get-po-list') }}',
+                    type: 'GET',
+                    data: {
+                        production_batch_id: batchId
+                    },
+                    success: function(groups) {
+                        poSelect.empty().append(new Option('Pilih No. PO', ''));
 
-            if (oldTanggal) {
-                loadShift(oldTanggal, oldBatchId);
-            } else {
-                resetShift('Pilih tanggal terlebih dahulu');
+                        if (!groups || groups.length === 0) {
+                            poSelect
+                                .append(new Option('Tidak ada bahan baku pada batch ini', ''))
+                                .prop('disabled', true)
+                                .trigger('change.select2');
+                            return;
+                        }
+
+                        groups.forEach(function(group) {
+                            const isEmptyPo = group.no_po === null || group.no_po === '';
+                            const value = isEmptyPo ? EMPTY_PO_VALUE : group.no_po;
+                            const label = isEmptyPo ? '(Belum diisi)' : group.no_po;
+
+                            poSelect.append(new Option(
+                                `${label} — ${group.jumlah_produk} material`,
+                                value,
+                                false,
+                                value === selectedPo
+                            ));
+                        });
+
+                        poSelect.prop('disabled', false).trigger('change.select2');
+
+                        if (selectedPo) {
+                            poSelect.val(selectedPo).trigger('change');
+                        }
+                    },
+                    error: function() {
+                        poSelect.empty()
+                            .append(new Option('Gagal memuat No. PO', ''))
+                            .prop('disabled', true)
+                            .trigger('change.select2');
+                    }
+                });
             }
+
+            poSelect.on('change', function() {
+                const selectedPo = $(this).val();
+
+                resetBahanBaku();
+
+                if (selectedPo === null || selectedPo === '') return;
+
+                const noPo = selectedPo === EMPTY_PO_VALUE ? '' : selectedPo;
+
+                // Kalau yang dipilih sama kayak PO yang lagi dipakai record ini, langsung preselect bahan bakunya.
+                const preselectId = (noPo === (currentNoPo ?? '')) ? currentBahanBakuId : '';
+
+                loadBahanBaku(noPo, preselectId);
+            });
+
+            bahanBakuSelect.on('change', function() {
+                bahanBakuIdInput.val($(this).val() || '');
+            });
+
+            $('#rekapitulasiProduksiForm').on('submit', function(event) {
+                if (!bahanBakuIdInput.val()) {
+                    event.preventDefault();
+                    alert('Silakan pilih Material Bahan Baku terlebih dahulu.');
+                }
+            });
+
+            const initialPo = currentNoPo === '' ? EMPTY_PO_VALUE : currentNoPo;
+            loadPoList(currentNoPo !== null ? initialPo : '');
         });
     </script>
 @endpush

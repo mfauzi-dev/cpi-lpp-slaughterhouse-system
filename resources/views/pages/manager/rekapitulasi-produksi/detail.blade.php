@@ -78,6 +78,28 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-box">
+                                <div class="info-label">No. PO (Bahan Baku)</div>
+                                <div class="info-value">
+                                    {{ optional($rekapitulasiProduksi->bahanBaku)->no_po ?: '-' }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-box">
+                                <div class="info-label">Material Bahan Baku</div>
+                                <div class="info-value">
+                                    @if ($rekapitulasiProduksi->bahanBaku && $rekapitulasiProduksi->bahanBaku->material)
+                                        {{ $rekapitulasiProduksi->bahanBaku->material->material_code }}
+                                        -
+                                        {{ $rekapitulasiProduksi->bahanBaku->material->material_description }}
+                                    @else
+                                        -
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

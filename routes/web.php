@@ -98,6 +98,9 @@ Route::prefix('operator')->middleware(['auth', 'role:Operator'])->group(function
         Route::get('/create', [RekapitulasiProduksiController::class, 'create'])->name('operator.rekapitulasi-produksi.create');
         Route::post('/store', [RekapitulasiProduksiController::class, 'store'])->name('operator.rekapitulasi-produksi.store');
 
+        Route::get('/get-po-list', [RekapitulasiProduksiController::class, 'getPoList'])->name('operator.rekapitulasi-produksi.get-po-list');
+        Route::get('/get-bahan-baku-by-po', [RekapitulasiProduksiController::class, 'getBahanBakuByPo'])->name('operator.rekapitulasi-produksi.get-bahan-baku-by-po');
+
         Route::get('/{id}/edit', [RekapitulasiProduksiController::class, 'edit'])->name('operator.rekapitulasi-produksi.edit');
         Route::put('/{id}/update', [RekapitulasiProduksiController::class, 'update'])->name('operator.rekapitulasi-produksi.update');
         Route::delete('/{id}/delete', [RekapitulasiProduksiController::class, 'destroy'])->name('operator.rekapitulasi-produksi.destroy');
@@ -118,7 +121,7 @@ Route::prefix('operator')->middleware(['auth', 'role:Operator'])->group(function
         Route::delete('/{id}/delete', [ProductivityController::class, 'destroy'])->name('operator.productivity.destroy');
 
         Route::get('/{id}', [ProductivityController::class, 'detail'])->name('operator.productivity.detail');
-    });
+});
 
     Route::prefix('metal-detector')->group(function () {
         Route::get('/', [MetalDetectorController::class, 'index'])->name('operator.metal-detector.index');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BahanBaku;
 use App\Models\ProductionBatch;
 use App\Models\RekapitulasiProduksi;
 use Illuminate\Http\Request;
@@ -43,6 +44,77 @@ class RekapitulasiProduksiController extends Controller
         );
     }
 
+    public function getPoList(Request $request)
+    {
+        $request->validate([
+            'production_batch_id' => [
+                'required',
+                'integer',
+                'exists:production_batches,id',
+            ],
+        ]);
+
+        $bahanBakus = BahanBaku::where('production_batch_id', $request->production_batch_id)
+            ->get(['no_po', 'jumlah_kg']);
+
+        $groups = [];
+
+        foreach ($bahanBakus as $item) {
+            $noPo = $item->no_po ?? '';
+
+            if (!isset($groups[$noPo])) {
+                $groups[$noPo] = [
+                    'no_po' => $noPo,
+                    'jumlah_produk' => 0,
+                    'total_kg' => 0,
+                ];
+            }
+
+            $groups[$noPo]['jumlah_produk'] += 1;
+            $groups[$noPo]['total_kg'] += $item->jumlah_kg;
+        }
+
+        return response()->json(array_values($groups));
+    }
+
+    public function getBahanBakuByPo(Request $request)
+    {
+        $request->validate([
+            'production_batch_id' => [
+                'required',
+                'integer',
+                'exists:production_batches,id',
+            ],
+            'no_po' => ['present', 'nullable', 'string'],
+        ]);
+
+        $noPo = $request->input('no_po');
+
+        $query = BahanBaku::with(['material:id,material_code,material_description'])
+            ->where('production_batch_id', $request->production_batch_id);
+
+        if ($noPo === '' || $noPo === null) {
+            $query->where(function ($q) {
+                $q->whereNull('no_po')->orWhere('no_po', '');
+            });
+        } else {
+            $query->where('no_po', $noPo);
+        }
+
+        $bahanBakus = $query
+            ->orderBy('id')
+            ->get([
+                'id',
+                'production_batch_id',
+                'no_po',
+                'material_id',
+                'jumlah_bag',
+                'jumlah_kg',
+            ]);
+
+        return response()->json($bahanBakus);
+    }
+
     public function create()
     {
         $productions = ProductionBatch::latest('tanggal')
@@ -63,6 +135,11 @@ class RekapitulasiProduksiController extends Controller
                 'integer',
                 'exists:production_batches,id',
             ],
+            'bahan_baku_id' => [
+                'nullable',
+                'integer',
+                'exists:bahan_bakus,id',
+            ],
             'mesin' => ['nullable', 'string', 'max:255'],
             'waktu_start' => ['nullable', 'date_format:H:i'],
             'waktu_stop' => ['nullable', 'date_format:H:i'],
@@ -81,6 +158,7 @@ class RekapitulasiProduksiController extends Controller
             DB::transaction(function () use ($validated) {
                 RekapitulasiProduksi::create([
                     'production_batch_id' => $validated['production_batch_id'],
+                    'bahan_baku_id' => $validated['bahan_baku_id'] ?? null,
                     'mesin' => $validated['mesin'] ?? null,
                     'waktu_start' => $validated['waktu_start'] ?? null,
                     'waktu_stop' => $validated['waktu_stop'] ?? null,
@@ -108,7 +186,7 @@ class RekapitulasiProduksiController extends Controller
 
     public function detail($id)
     {
-        $rekapitulasiProduksi = RekapitulasiProduksi::with('productionBatch')
+        $rekapitulasiProduksi = RekapitulasiProduksi::with('productionBatch', 'bahanBaku.material')
             ->findOrFail($id);
 
         return view(
@@ -119,7 +197,7 @@ class RekapitulasiProduksiController extends Controller
 
     public function edit($id)
     {
-        $rekapitulasiProduksi = RekapitulasiProduksi::with('productionBatch')->findOrFail($id);
+        $rekapitulasiProduksi = RekapitulasiProduksi::with('productionBatch', 'bahanBaku')->findOrFail($id);
 
         $productions = ProductionBatch::latest('tanggal')
             ->latest('id')
@@ -139,6 +217,11 @@ class RekapitulasiProduksiController extends Controller
                 'integer',
                 'exists:production_batches,id',
             ],
+            'bahan_baku_id' => [
+                'nullable',
+                'integer',
+                'exists:bahan_bakus,id',
+            ],
             'mesin' => ['nullable', 'string', 'max:255'],
             'waktu_start' => ['nullable', 'date_format:H:i'],
             'waktu_stop' => ['nullable', 'date_format:H:i'],
@@ -157,6 +240,7 @@ class RekapitulasiProduksiController extends Controller
 
         $rekapitulasiProduksi->update([
             'production_batch_id' => $validated['production_batch_id'],
+            'bahan_baku_id' => $validated['bahan_baku_id'] ?? null,
             'mesin' => $validated['mesin'] ?? null,
             'waktu_start' => $validated['waktu_start'] ?? null,
             'waktu_stop' => $validated['waktu_stop'] ?? null,
@@ -241,7 +325,7 @@ class RekapitulasiProduksiController extends Controller
 
     public function managerDetail($id)
     {
-        $rekapitulasiProduksi = RekapitulasiProduksi::with('productionBatch')->findOrFail($id);
+        $rekapitulasiProduksi = RekapitulasiProduksi::with('productionBatch', 'bahanBaku.material')->findOrFail($id);
 
         return view(
             'pages.manager.rekapitulasi-produksi.detail',

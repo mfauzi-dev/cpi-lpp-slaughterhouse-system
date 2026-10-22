@@ -11,6 +11,7 @@ class RekapitulasiProduksi extends Model
 
     protected $fillable = [
         'production_batch_id',
+        'bahan_baku_id',
         'mesin',
         'waktu_start',
         'waktu_stop',
@@ -38,4 +39,9 @@ class RekapitulasiProduksi extends Model
     {
         return $this->belongsTo(ProductionBatch::class);
     }
+
+    public function bahanBaku()
+{
+    return $this->belongsTo(BahanBaku::class, 'bahan_baku_id');
+}
 }
