@@ -866,6 +866,7 @@
                                 <thead>
                                     <tr>
                                         <th>Mesin</th>
+                                        <th>Material Bahan Baku</th>
                                         <th>Waktu Start</th>
                                         <th>Waktu Stop</th>
                                         <th class="text-right">Operation Time</th>
@@ -883,6 +884,7 @@
                                     @foreach ($productionBatch->rekapitulasiProduksis as $rekap)
                                         <tr>
                                             <td>{{ $rekap->mesin ?? '-' }}</td>
+                                            <td>{{ $rekap->bahanBaku->material->material_description ?? '-' }}</td>
                                             <td>{{ $rekap->waktu_start ? substr($rekap->waktu_start, 0, 5) : '-' }}</td>
                                             <td>{{ $rekap->waktu_stop ? substr($rekap->waktu_stop, 0, 5) : '-' }}</td>
                                             <td class="text-right">
