@@ -9,8 +9,9 @@ class DataHasilProduksi extends Model
 {
     use HasFactory;
 
-        protected $fillable = [
+    protected $fillable = [
         'production_batch_id',
+        'bahan_baku_id',
         'cost_center_name',
         'no_po',
         'material_id',
@@ -55,5 +56,10 @@ class DataHasilProduksi extends Model
     public function material()
     {
         return $this->belongsTo(Material::class);
+    }
+
+    public function bahanBaku()
+    {
+        return $this->belongsTo(BahanBaku::class);
     }
 }

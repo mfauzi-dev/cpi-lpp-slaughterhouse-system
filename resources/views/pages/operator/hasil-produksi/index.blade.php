@@ -117,6 +117,8 @@
                                 <th class="text-center" width="70">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Bahan Baku</th>
+                                <th>Total KG</th>
                                 <th>Cost Center Name</th>
                                 <th>No. PO</th>
                                 <th>Nama Product</th>
@@ -138,6 +140,12 @@
                                         {{ $hasilProduksi->productionBatch?->shift ? 'Shift ' . $hasilProduksi->productionBatch->shift : '-' }}
                                     </td>
                                     <td>
+                                        {{ $hasilProduksi->bahanBaku->material->material_description }}
+                                    </td>
+                                    <td>
+                                        {{ number_format($hasilProduksi->bahanBaku->jumlah_kg, 2, ',', '.') }} KG
+                                    </td>
+                                    <td>
                                         {{ $hasilProduksi->cost_center_name ?? '-' }}
                                     </td>
                                     <td>
@@ -150,12 +158,12 @@
                                         <div class="action-buttons">
                                             <a href="{{ route('operator.hasil-produksi.detail', $hasilProduksi->id) }}"
                                                 class="btn btn-outline-info" title="Detail">
-                                                <i class="fas fa-eye"></i>
+                                                <i class="fas fa-file-alt"></i> Lihat Detail
                                             </a>
 
                                             <a href="{{ route('operator.hasil-produksi.edit', $hasilProduksi->id) }}"
                                                 class="btn btn-outline-warning" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                                <i class="fas fa-edit"></i> Edit
                                             </a>
 
                                             <form
@@ -166,7 +174,7 @@
                                                 @method('DELETE')
 
                                                 <button type="submit" class="btn btn-outline-danger" title="Hapus">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fas fa-trash"></i> Delete
                                                 </button>
                                             </form>
                                         </div>
@@ -174,7 +182,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7">
+                                    <td colspan="9">
                                         <div class="empty-state">
                                             <i class="fas fa-clipboard-list d-block"></i>
                                             <div>Belum ada data hasil produksi.</div>

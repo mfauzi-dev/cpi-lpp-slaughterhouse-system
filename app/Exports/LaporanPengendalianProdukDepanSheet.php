@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -20,6 +21,11 @@ class LaporanPengendalianProdukDepanSheet implements
     WithTitle
 {
     protected ProductionBatch $productionBatch;
+
+    // Sheet sekarang selebar A:R (18 kolom) karena tabel hasil produksi
+    // punya Bahan Baku + Total KG di depan.
+    protected string $lastCol = 'R';
+    protected int $totalCols = 18;
 
     public function __construct(ProductionBatch $productionBatch)
     {
@@ -55,6 +61,8 @@ class LaporanPengendalianProdukDepanSheet implements
             'N' => 15,
             'O' => 17,
             'P' => 19,
+            'Q' => 15,
+            'R' => 15,
         ];
     }
 
@@ -73,13 +81,20 @@ class LaporanPengendalianProdukDepanSheet implements
                 $row = $this->buildBahanBaku($sheet, $row);
                 $row = $this->buildDataHasilProduksi($sheet, $row);
 
+                // Di-sort per bahan_baku_id supaya baris dengan bahan baku
+                // yang sama berurutan (syarat merge vertikal).
+                $rekapitulasiProduksis = $this->productionBatch->rekapitulasiProduksis
+                    ->sortBy('bahan_baku_id')
+                    ->values();
+
                 $row = $this->buildProcessTable(
                     $sheet,
                     $row,
                     'REKAPITULASI PRODUKSI & MONITORING MESIN',
                     [
+                        'Bahan Baku',
+                        'Total KG',
                         'Mesin',
-                        'Material Bahan Baku',
                         'Waktu Start',
                         'Waktu Stop',
                         'Operation Time',
@@ -92,10 +107,13 @@ class LaporanPengendalianProdukDepanSheet implements
                         'Tindakan Perbaikan',
                         'PIC/Operator',
                     ],
-          $this->productionBatch->rekapitulasiProduksis
+                    $rekapitulasiProduksis
                         ->map(fn ($item) => [
+                            $item->bahanBaku?->material?->material_description ?? '-',
+                            $item->bahanBaku
+                                ? $this->number($item->bahanBaku->jumlah_kg) . ' Kg'
+                                : '-',
                             $item->mesin ?? '-',
-                            $item->bahanBaku->material->material_description ?? '-',
                             $this->time($item->waktu_start),
                             $this->time($item->waktu_stop),
                             $this->number($item->operation_time),
@@ -109,14 +127,22 @@ class LaporanPengendalianProdukDepanSheet implements
                             $item->pic_operator ?? '-',
                         ])
                         ->values()
-                        ->all()
+                        ->all(),
+                    [0, 1],
+                    $rekapitulasiProduksis->pluck('bahan_baku_id')->values()->all()
                 );
+
+                $productivities = $this->productionBatch->productivities
+                    ->sortBy('bahan_baku_id')
+                    ->values();
 
                 $row = $this->buildProcessTable(
                     $sheet,
                     $row,
                     'PRODUCTIVITY',
                     [
+                        'Bahan Baku',
+                        'Total KG',
                         'Material',
                         'Worker Indirect',
                         'Worker Direct',
@@ -126,9 +152,13 @@ class LaporanPengendalianProdukDepanSheet implements
                         'Productivity Indirect',
                         'Productivity Direct',
                     ],
-                    $this->productionBatch->productivities
+                    $productivities
                         ->map(fn ($item) => [
-                            $item->material->material_description ?? '-',
+                            $item->bahanBaku?->material?->material_description ?? '-',
+                            $item->bahanBaku
+                                ? $this->number($item->bahanBaku->jumlah_kg) . ' Kg'
+                                : '-',
+                            $item->material?->material_description ?? '-',
                             $item->worker_indirect ?? '-',
                             $item->worker_direct ?? '-',
                             $item->worker_total ?? '-',
@@ -138,14 +168,16 @@ class LaporanPengendalianProdukDepanSheet implements
                             $this->number($item->productivity_direct),
                         ])
                         ->values()
-                        ->all()
+                        ->all(),
+                    [0, 1],
+                    $productivities->pluck('bahan_baku_id')->values()->all()
                 );
 
                 $this->buildApproval($sheet, $row);
 
                 $lastRow = $sheet->getHighestRow();
 
-                $sheet->getStyle("A1:P{$lastRow}")
+                $sheet->getStyle("A1:{$this->lastCol}{$lastRow}")
                     ->getAlignment()
                     ->setVertical(Alignment::VERTICAL_CENTER)
                     ->setWrapText(true);
@@ -177,27 +209,27 @@ class LaporanPengendalianProdukDepanSheet implements
 
     protected function buildHeader($sheet): void
     {
-        $sheet->mergeCells('A1:P1');
+        $sheet->mergeCells("A1:{$this->lastCol}1");
         $sheet->setCellValue('A1', 'PT CHAROEN POKPHAND INDONESIA');
 
-        $sheet->mergeCells('A2:P2');
+        $sheet->mergeCells("A2:{$this->lastCol}2");
         $sheet->setCellValue('A2', 'FOOD DIVISION');
 
-        $sheet->mergeCells('A3:P3');
+        $sheet->mergeCells("A3:{$this->lastCol}3");
         $sheet->setCellValue('A3', 'LAPORAN PENGENDALIAN PRODUK');
 
         $tanggal = $this->productionBatch->tanggal
             ? $this->productionBatch->tanggal->format('d/m/Y')
             : '-';
 
-        $sheet->mergeCells('A4:P4');
+        $sheet->mergeCells("A4:{$this->lastCol}4");
         $sheet->setCellValue(
             'A4',
             'PRODUCTION BATCH : ' . $tanggal .
             ' - SHIFT ' . ($this->productionBatch->shift ?? '-')
         );
 
-        $sheet->getStyle('A1:P4')
+        $sheet->getStyle("A1:{$this->lastCol}4")
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
             ->setVertical(Alignment::VERTICAL_CENTER)
@@ -246,7 +278,7 @@ class LaporanPengendalianProdukDepanSheet implements
                 ['A', 'C', $label1 . ' :'],
                 ['D', 'G', $value1],
                 ['H', 'J', $label2 . ' :'],
-                ['K', 'P', $value2],
+                ['K', $this->lastCol, $value2],
             ];
 
             foreach ($cells as [$start, $end, $value]) {
@@ -273,7 +305,7 @@ class LaporanPengendalianProdukDepanSheet implements
 
     protected function buildBahanBaku($sheet, int $row): int
     {
-        $this->sectionTitle($sheet, $row, 'DATA BAHAN BAKU', 'A', 'P');
+        $this->sectionTitle($sheet, $row, 'DATA BAHAN BAKU', 'A', $this->lastCol);
 
         $row++;
 
@@ -305,7 +337,7 @@ class LaporanPengendalianProdukDepanSheet implements
         $bahanBakus = $this->productionBatch->bahanBakus;
 
         if ($bahanBakus->isEmpty()) {
-            $this->emptyBlockRow($sheet, $row, 'A', 'P');
+            $this->emptyBlockRow($sheet, $row, 'A', $this->lastCol);
 
             return $row + 2;
         }
@@ -339,28 +371,28 @@ class LaporanPengendalianProdukDepanSheet implements
             fn ($item) => (float) ($item->jumlah_kg ?? 0)
         );
 
-        $sheet->mergeCells("A{$row}:M{$row}");
+        $sheet->mergeCells("A{$row}:O{$row}");
         $sheet->setCellValue("A{$row}", 'TOTAL');
 
-        $sheet->mergeCells("N{$row}:P{$row}");
-        $sheet->setCellValue("N{$row}", $this->number($totalKg) . ' Kg');
+        $sheet->mergeCells("P{$row}:R{$row}");
+        $sheet->setCellValue("P{$row}", $this->number($totalKg) . ' Kg');
 
-        $sheet->getStyle("A{$row}:P{$row}")
+        $sheet->getStyle("A{$row}:R{$row}")
             ->getBorders()
             ->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getStyle("A{$row}:P{$row}")
+        $sheet->getStyle("A{$row}:R{$row}")
             ->getFont()
             ->setBold(true)
             ->setSize(13);
 
-        $sheet->getStyle("A{$row}:L{$row}")
+        $sheet->getStyle("A{$row}:O{$row}")
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_RIGHT)
             ->setVertical(Alignment::VERTICAL_CENTER);
 
-        $sheet->getStyle("M{$row}:P{$row}")
+        $sheet->getStyle("P{$row}:R{$row}")
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
             ->setVertical(Alignment::VERTICAL_CENTER);
@@ -372,110 +404,84 @@ class LaporanPengendalianProdukDepanSheet implements
 
     protected function buildDataHasilProduksi($sheet, int $row): int
     {
-        $this->sectionTitle(
+        $items = $this->productionBatch->dataHasilProduksis
+            ->sortBy('bahan_baku_id')
+            ->values();
+
+        return $this->buildProcessTable(
             $sheet,
             $row,
             'DATA PRODUK & HASIL PRODUKSI',
-            'A',
-            'P'
+            [
+                'Bahan Baku',
+                'Total KG',
+                'No. PO',
+                'Cost Center Name',
+                'Material',
+                'Domestik Kg',
+                'Further Kg',
+                'Frozen Kg',
+                'RM',
+                'Total Bag',
+                'Total Kg',
+                'Yield %',
+                'Loss Kg',
+                'Loss %',
+                'Pickup Kg',
+                'Pickup %',
+                'Cek Suhu Jam / Suhu',
+                'Packaging',
+            ],
+            $items
+                ->map(fn ($item) => [
+                    $item->bahanBaku?->material?->material_description ?? '-',
+                    $item->bahanBaku
+                        ? $this->number($item->bahanBaku->jumlah_kg) . ' Kg'
+                        : '-',
+                    $item->no_po ?? $this->productionBatch->no_po ?? '-',
+                    $item->cost_center_name ?? $this->productionBatch->cost_center_name ?? '-',
+                    $item->material?->material_description ?? '-',
+                    $this->number($item->domestik_kg),
+                    $this->number($item->further_kg),
+                    $this->number($item->frozen_kg),
+                    $this->number($item->rm),
+                    $item->total_bag ?? '-',
+                    $this->number($item->total_kg),
+                    $this->number($item->yield_persen) . ' %',
+                    $this->number($item->loss_kg),
+                    $this->number($item->loss_persen) . ' %',
+                    $this->number($item->pickup_kg),
+                    $this->number($item->pickup_persen) . ' %',
+                    ($item->pengecekan_suhu_jam ?? '-') . ' / ' .
+                        $this->number($item->pengecekan_suhu_suhu),
+                    ($item->packaging_nama_kemasan ?? '-') . ' (' .
+                        $this->number($item->packaging_jumlah_kg) . ' Kg)',
+                ])
+                ->values()
+                ->all(),
+            [0, 1],
+            $items->pluck('bahan_baku_id')->values()->all()
         );
-
-        $row++;
-
-        $columns = [
-            'No. PO',
-            'Cost Center Name',
-            'Material',
-            'Domestik Kg',
-            'Further Kg',
-            'Frozen Kg',
-            'RM',
-            'Total Bag',
-            'Total Kg',
-            'Yield %',
-            'Loss Kg',
-            'Loss %',
-            'Pickup Kg',
-            'Pickup %',
-            'Cek Suhu Jam / Suhu',
-            'Packaging',
-        ];
-
-        $spans = $this->distributeColumns(count($columns));
-
-        foreach ($columns as $i => $label) {
-            [$start, $end] = $spans[$i];
-
-            if ($start !== $end) {
-                $sheet->mergeCells("{$start}{$row}:{$end}{$row}");
-            }
-
-            $sheet->setCellValue("{$start}{$row}", $label);
-        }
-
-        $this->styleRow($sheet, $row, 14, true);
-        $sheet->getRowDimension($row)->setRowHeight(58);
-
-        $row++;
-
-        $dataHasilProduksis = $this->productionBatch->dataHasilProduksis;
-
-        if ($dataHasilProduksis->isEmpty()) {
-            $this->emptyBlockRow($sheet, $row, 'A', 'P');
-
-            return $row + 2;
-        }
-
-        foreach ($dataHasilProduksis as $item) {
-            $values = [
-                $item->no_po ?? $this->productionBatch->no_po ?? '-',
-                $item->cost_center_name ?? $this->productionBatch->cost_center_name ?? '-',
-                $item->material->material_description ?? '-',
-                $this->number($item->domestik_kg),
-                $this->number($item->further_kg),
-                $this->number($item->frozen_kg),
-                $this->number($item->rm),
-                $item->total_bag ?? '-',
-                $this->number($item->total_kg),
-                $this->number($item->yield_persen) . ' %',
-                $this->number($item->loss_kg),
-                $this->number($item->loss_persen) . ' %',
-                $this->number($item->pickup_kg),
-                $this->number($item->pickup_persen) . ' %',
-                ($item->pengecekan_suhu_jam ?? '-') . ' / ' .
-                    $this->number($item->pengecekan_suhu_suhu),
-                ($item->packaging_nama_kemasan ?? '-') . ' (' .
-                    $this->number($item->packaging_jumlah_kg) . ' Kg)',
-            ];
-
-            foreach ($values as $i => $value) {
-                [$start, $end] = $spans[$i];
-
-                if ($start !== $end) {
-                    $sheet->mergeCells("{$start}{$row}:{$end}{$row}");
-                }
-
-                $sheet->setCellValue("{$start}{$row}", $value);
-            }
-
-            $this->styleRow($sheet, $row, 12, false);
-            $sheet->getRowDimension($row)->setRowHeight(42);
-
-            $row++;
-        }
-
-        return $row + 1;
     }
 
+    /**
+     * Render tabel proses generik (Hasil Produksi, Rekapitulasi, Productivity).
+     *
+     * $mergeColumns: index kolom (0-based) yang di-merge vertikal untuk baris
+     * berurutan dengan key yang sama.
+     * $mergeKeys: nilai pembanding per baris (sejajar dengan $rows), biasanya
+     * bahan_baku_id. Key null dianggap unik (tidak ikut ter-merge).
+     */
     protected function buildProcessTable(
         $sheet,
         int $row,
         string $title,
         array $columns,
-        array $rows
+        array $rows,
+        array $mergeColumns = [],
+        array $mergeKeys = []
     ): int {
-        $this->sectionTitle($sheet, $row, $title, 'A', 'P');
-
+        $this->sectionTitle($sheet, $row, $title, 'A', $this->lastCol);
         $row++;
 
         $spans = $this->distributeColumns(count($columns));
@@ -492,18 +498,43 @@ class LaporanPengendalianProdukDepanSheet implements
 
         $this->styleRow($sheet, $row, 14, true);
         $sheet->getRowDimension($row)->setRowHeight(52);
-
         $row++;
 
         if (empty($rows)) {
-            $this->emptyBlockRow($sheet, $row, 'A', 'P');
+            $this->emptyBlockRow($sheet, $row, 'A', $this->lastCol);
 
             return $row + 2;
         }
 
-        foreach ($rows as $record) {
+        $hasMerge = !empty($mergeColumns);
+        $totalRows = count($rows);
+
+        $keys = [];
+        foreach (array_keys($rows) as $index) {
+            $keys[$index] = $mergeKeys[$index] ?? ('__row_' . $index);
+        }
+
+        $groupStartRow = $row;
+
+        foreach ($rows as $index => $record) {
+            $isNewGroup = !$hasMerge || $index === 0 || $keys[$index] !== $keys[$index - 1];
+
+            if ($isNewGroup) {
+                $groupStartRow = $row;
+            }
+
             foreach ($record as $i => $value) {
                 [$start, $end] = $spans[$i];
+
+                // Kolom merge vertikal: isi nilai cuma di baris pertama grup,
+                // merge dilakukan sekali di akhir grup (hindari merge tumpang tindih).
+                if ($hasMerge && in_array($i, $mergeColumns, true)) {
+                    if ($isNewGroup) {
+                        $sheet->setCellValue("{$start}{$row}", $value);
+                    }
+
+                    continue;
+                }
 
                 if ($start !== $end) {
                     $sheet->mergeCells("{$start}{$row}:{$end}{$row}");
@@ -515,6 +546,25 @@ class LaporanPengendalianProdukDepanSheet implements
             $this->styleRow($sheet, $row, 12, false);
             $sheet->getRowDimension($row)->setRowHeight(38);
 
+            $isLastInGroup = $hasMerge
+                && ($index === $totalRows - 1 || $keys[$index + 1] !== $keys[$index]);
+
+            if ($isLastInGroup) {
+                foreach ($mergeColumns as $colIndex) {
+                    [$start, $end] = $spans[$colIndex];
+
+                    if ($start !== $end || $row > $groupStartRow) {
+                        $sheet->mergeCells("{$start}{$groupStartRow}:{$end}{$row}");
+                    }
+
+                    $sheet->getStyle("{$start}{$groupStartRow}:{$end}{$row}")
+                        ->getAlignment()
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setWrapText(true);
+                }
+            }
+
             $row++;
         }
 
@@ -525,8 +575,8 @@ class LaporanPengendalianProdukDepanSheet implements
     {
         $letters = [];
 
-        for ($i = 1; $i <= 16; $i++) {
-            $letters[] = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
+        for ($i = 1; $i <= $this->totalCols; $i++) {
+            $letters[] = Coordinate::stringFromColumnIndex($i);
         }
 
         $n = max(1, min($n, count($letters)));
@@ -552,7 +602,7 @@ class LaporanPengendalianProdukDepanSheet implements
 
     protected function styleRow($sheet, int $row, int $size, bool $header): void
     {
-        $range = "A{$row}:P{$row}";
+        $range = "A{$row}:{$this->lastCol}{$row}";
 
         $sheet->getStyle($range)
             ->getBorders()
@@ -611,10 +661,10 @@ class LaporanPengendalianProdukDepanSheet implements
     protected function buildApproval($sheet, int $row): void
     {
         $cols = [
-            ['A', 'D', 'Dibuat Oleh', 'Operator'],
-            ['E', 'H', 'Diperiksa Oleh', 'QC'],
-            ['I', 'L', 'Diketahui Oleh', 'Foreman/Lady'],
-            ['M', 'P', 'Disetujui Oleh', 'Supervisor'],
+            ['A', 'E', 'Dibuat Oleh', 'Operator'],
+            ['F', 'I', 'Diperiksa Oleh', 'QC'],
+            ['J', 'N', 'Diketahui Oleh', 'Foreman/Lady'],
+            ['O', 'R', 'Disetujui Oleh', 'Supervisor'],
         ];
 
         foreach ($cols as [$start, $end, $title, $role]) {

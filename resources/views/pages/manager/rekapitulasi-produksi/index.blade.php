@@ -102,6 +102,8 @@
                                 <th class="text-center" width="60">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Bahan Baku</th>
+                                <th>Total KG</th>
                                 <th>Mesin</th>
                                 <th class="text-center" width="100">Action</th>
                             </tr>
@@ -127,6 +129,14 @@
                                     </td>
 
                                     <td>
+                                        {{ $rekapitulasiProduksi->bahanBaku->material->material_description }}
+                                    </td>
+
+                                    <td>
+                                        {{ $rekapitulasiProduksi->bahanBaku->jumlah_kg }}
+                                    </td>
+
+                                    <td>
                                         {{ $rekapitulasiProduksi->mesin ?? '-' }}
                                     </td>
 
@@ -134,7 +144,7 @@
                                         <div class="action-buttons justify-content-center">
                                             <a href="{{ route('manager.rekapitulasi-produksi.detail', $rekapitulasiProduksi->id) }}"
                                                 class="btn btn-outline-info" title="Detail">
-                                                Lihat Detail
+                                                <i class="fas fa-file-alt"></i> Lihat Detail
                                             </a>
                                         </div>
                                     </td>

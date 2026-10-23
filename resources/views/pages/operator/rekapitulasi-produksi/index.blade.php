@@ -110,6 +110,8 @@
                                 <th class="text-center" width="60">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Bahan Baku</th>
+                                <th>Total KG</th>
                                 <th>Mesin</th>
                                 <th class="text-center" width="150">Action</th>
                             </tr>
@@ -130,17 +132,23 @@
                                             ? 'Shift ' . $rekapitulasiProduksi->productionBatch->shift
                                             : '-' }}
                                     </td>
+                                    <td>
+                                        {{ $rekapitulasiProduksi->bahanBaku->material->material_description }}
+                                    </td>
+                                    <td>
+                                        {{ $rekapitulasiProduksi->bahanBaku->jumlah_kg }}
+                                    </td>
                                     <td>{{ $rekapitulasiProduksi->mesin ?? '-' }}</td>
                                     <td class="text-center">
                                         <div class="action-buttons">
                                             <a href="{{ route('operator.rekapitulasi-produksi.detail', $rekapitulasiProduksi->id) }}"
                                                 class="btn btn-outline-info" title="Detail">
-                                                <i class="fas fa-eye"></i>
+                                                <i class="fas fa-file-alt"></i> Lihat Detail
                                             </a>
 
                                             <a href="{{ route('operator.rekapitulasi-produksi.edit', $rekapitulasiProduksi->id) }}"
                                                 class="btn btn-outline-warning" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                                <i class="fas fa-edit"></i> Edit
                                             </a>
 
                                             <form
@@ -151,7 +159,7 @@
                                                 @method('DELETE')
 
                                                 <button type="submit" class="btn btn-outline-danger" title="Hapus">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fas fa-trash"></i> Delete
                                                 </button>
                                             </form>
                                         </div>

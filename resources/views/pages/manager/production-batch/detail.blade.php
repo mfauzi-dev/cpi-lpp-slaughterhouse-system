@@ -455,8 +455,6 @@
                 </div>
             </div>
 
-
-
             {{-- 3. DATA HASIL PRODUKSI --}}
             <div class="card mb-4">
                 <div class="card-header">
@@ -468,28 +466,30 @@
 
                 <div class="card-body">
                     @php
-                        $hasilProduksiPerPo = $productionBatch->dataHasilProduksis->groupBy(function ($item) {
-                            return $item->no_po ?: 'Tanpa No. PO';
-                        });
+                        $hasilProduksiPerBahanBaku = $productionBatch->dataHasilProduksis
+                            ->sortBy('bahan_baku_id')
+                            ->groupBy('bahan_baku_id');
                     @endphp
 
-                    @forelse ($hasilProduksiPerPo as $noPo => $hasilProduksis)
+                    @forelse ($hasilProduksiPerBahanBaku as $hasilProduksis)
+                        @php $bahanBaku = $hasilProduksis->first()->bahanBaku; @endphp
+
                         <div class="{{ !$loop->last ? 'mb-4 pb-4' : '' }}"
                             style="{{ !$loop->last ? 'border-bottom: 1px dashed var(--pb-border);' : '' }}">
 
                             <div class="batch-highlight">
                                 <div class="row align-items-center">
                                     <div class="col-md-8">
-                                        <div class="batch-label">No. Purchase Order</div>
-                                        <div class="batch-number">{{ $noPo }}</div>
-                                        <div class="batch-product">
-                                            Cost Center:
-                                            {{ $hasilProduksis->pluck('cost_center_name')->filter()->unique()->implode(', ') ?: '-' }}
+                                        <div class="batch-label">Bahan Baku</div>
+                                        <div class="batch-number">
+                                            {{ $bahanBaku?->material?->material_description ?? '-' }}
                                         </div>
                                     </div>
                                     <div class="col-md-4 text-md-right mt-3 mt-md-0">
-                                        <div class="batch-label">Jumlah Material</div>
-                                        <div class="batch-number">{{ $hasilProduksis->count() }} Material</div>
+                                        <div class="batch-label">Total KG</div>
+                                        <div class="batch-number">
+                                            {{ $bahanBaku && $bahanBaku->jumlah_kg !== null ? number_format((float) $bahanBaku->jumlah_kg, 2, ',', '.') . ' Kg' : '-' }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -498,11 +498,23 @@
                                 <div class="mb-4 {{ !$loop->last ? 'pb-3' : '' }}"
                                     style="{{ !$loop->last ? 'border-bottom: 1px dashed var(--pb-border);' : '' }}">
 
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4 mb-2">
                                             <div class="info-label">Material</div>
                                             <div class="info-value">
                                                 {{ $dataHasil->material->material_description ?? '-' }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <div class="info-label">No. PO</div>
+                                            <div class="info-value">
+                                                {{ $dataHasil->no_po ?? '-' }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <div class="info-label">Cost Center</div>
+                                            <div class="info-value">
+                                                {{ $dataHasil->cost_center_name ?? '-' }}
                                             </div>
                                         </div>
                                     </div>
@@ -670,7 +682,6 @@
                 </div>
             </div>
 
-
             {{-- 4. METAL DETECTOR --}}
             <div class="card mb-4">
                 <div class="card-header">
@@ -741,106 +752,135 @@
                 </div>
 
                 <div class="card-body">
-                    @if ($productionBatch->productivities->count())
-                        @foreach ($productionBatch->productivities as $productivity)
-                            <div class="row {{ !$loop->last ? 'mb-4 pb-4' : '' }}"
-                                style="{{ !$loop->last ? 'border-bottom: 1px dashed var(--pb-border);' : '' }}">
-                                <div class="col-12 mb-2">
-                                    <span class="badge-soft">
-                                        {{ $productivity->material->material_description ?? 'Material -' }}
-                                    </span>
-                                </div>
+                    @php
+                        $productivityPerBahanBaku = $productionBatch->productivities
+                            ->sortBy('bahan_baku_id')
+                            ->groupBy('bahan_baku_id');
+                    @endphp
 
-                                <div class="col-md-3 mb-3">
-                                    <div class="stat-card">
-                                        <div class="stat-icon">
-                                            <i class="fas fa-users"></i>
-                                        </div>
-                                        <div>
-                                            <div class="stat-label">Worker Indirect</div>
-                                            <div class="stat-value">
-                                                {{ $productivity->worker_indirect ?? '-' }}
-                                            </div>
+                    @forelse ($productivityPerBahanBaku as $productivities)
+                        @php $bahanBaku = $productivities->first()->bahanBaku; @endphp
+
+                        <div class="{{ !$loop->last ? 'mb-4 pb-4' : '' }}"
+                            style="{{ !$loop->last ? 'border-bottom: 1px dashed var(--pb-border);' : '' }}">
+
+                            <div class="batch-highlight">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="batch-label">Bahan Baku</div>
+                                        <div class="batch-number">
+                                            {{ $bahanBaku?->material?->material_description ?? '-' }}
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="col-md-3 mb-3">
-                                    <div class="stat-card">
-                                        <div class="stat-icon">
-                                            <i class="fas fa-user-cog"></i>
-                                        </div>
-                                        <div>
-                                            <div class="stat-label">Worker Direct</div>
-                                            <div class="stat-value">
-                                                {{ $productivity->worker_direct ?? '-' }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3 mb-3">
-                                    <div class="stat-card">
-                                        <div class="stat-icon">
-                                            <i class="fas fa-user-friends"></i>
-                                        </div>
-                                        <div>
-                                            <div class="stat-label">Worker Total</div>
-                                            <div class="stat-value">
-                                                {{ $productivity->worker_total ?? '-' }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3 mb-3">
-                                    <div class="stat-card">
-                                        <div class="stat-icon">
-                                            <i class="fas fa-weight-hanging"></i>
-                                        </div>
-                                        <div>
-                                            <div class="stat-label">Total Weight</div>
-                                            <div class="stat-value">
-                                                {{ $productivity->total_weight !== null ? number_format((float) $productivity->total_weight, 2, ',', '.') . ' Kg' : '-' }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3 mb-3">
-                                    <div class="process-card">
-                                        <div class="process-label">Total Time</div>
-                                        <div class="process-value">
-                                            {{ $productivity->total_time !== null ? number_format((float) $productivity->total_time, 2, ',', '.') : '-' }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3 mb-3">
-                                    <div class="process-card">
-                                        <div class="process-label">Productivity Indirect</div>
-                                        <div class="process-value">
-                                            {{ $productivity->productivity_indirect !== null ? number_format((float) $productivity->productivity_indirect, 2, ',', '.') : '-' }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3 mb-3">
-                                    <div class="process-card">
-                                        <div class="process-label">Productivity Direct</div>
-                                        <div class="process-value">
-                                            {{ $productivity->productivity_direct !== null ? number_format((float) $productivity->productivity_direct, 2, ',', '.') : '-' }}
+                                    <div class="col-md-4 text-md-right mt-3 mt-md-0">
+                                        <div class="batch-label">Total KG</div>
+                                        <div class="batch-number">
+                                            {{ $bahanBaku && $bahanBaku->jumlah_kg !== null ? number_format((float) $bahanBaku->jumlah_kg, 2, ',', '.') . ' Kg' : '-' }}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
-                    @else
+
+                            @foreach ($productivities as $productivity)
+                                <div class="row {{ !$loop->last ? 'mb-4 pb-3' : '' }}"
+                                    style="{{ !$loop->last ? 'border-bottom: 1px dashed var(--pb-border);' : '' }}">
+                                    <div class="col-12 mb-2">
+                                        <span class="badge-soft">
+                                            {{ $productivity->material->material_description ?? 'Material -' }}
+                                        </span>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-users"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-label">Worker Indirect</div>
+                                                <div class="stat-value">
+                                                    {{ $productivity->worker_indirect ?? '-' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-user-cog"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-label">Worker Direct</div>
+                                                <div class="stat-value">
+                                                    {{ $productivity->worker_direct ?? '-' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-user-friends"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-label">Worker Total</div>
+                                                <div class="stat-value">
+                                                    {{ $productivity->worker_total ?? '-' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-weight-hanging"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-label">Total Weight</div>
+                                                <div class="stat-value">
+                                                    {{ $productivity->total_weight !== null ? number_format((float) $productivity->total_weight, 2, ',', '.') . ' Kg' : '-' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <div class="process-card">
+                                            <div class="process-label">Total Time</div>
+                                            <div class="process-value">
+                                                {{ $productivity->total_time !== null ? number_format((float) $productivity->total_time, 2, ',', '.') : '-' }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <div class="process-card">
+                                            <div class="process-label">Productivity Indirect</div>
+                                            <div class="process-value">
+                                                {{ $productivity->productivity_indirect !== null ? number_format((float) $productivity->productivity_indirect, 2, ',', '.') : '-' }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <div class="process-card">
+                                            <div class="process-label">Productivity Direct</div>
+                                            <div class="process-value">
+                                                {{ $productivity->productivity_direct !== null ? number_format((float) $productivity->productivity_direct, 2, ',', '.') : '-' }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @empty
                         <div class="process-empty">
                             <i class="fas fa-chart-line d-block"></i>
                             Belum ada data Productivity untuk production batch ini.
                         </div>
-                    @endif
+                    @endforelse
                 </div>
             </div>
 
@@ -855,12 +895,19 @@
 
                 <div class="card-body p-0">
                     @if ($productionBatch->rekapitulasiProduksis->count())
+                        @php
+                            $rekaps = $productionBatch->rekapitulasiProduksis->sortBy('bahan_baku_id')->values();
+                            $rekapGroupSizes = $rekaps->countBy('bahan_baku_id');
+                            $rekapPrinted = [];
+                        @endphp
+
                         <div class="table-responsive">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
+                                        <th>Bahan Baku</th>
+                                        <th class="text-right">Total KG</th>
                                         <th>Mesin</th>
-                                        <th>Material Bahan Baku</th>
                                         <th>Waktu Start</th>
                                         <th>Waktu Stop</th>
                                         <th class="text-right">Operation Time</th>
@@ -875,10 +922,20 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($productionBatch->rekapitulasiProduksis as $rekap)
+                                    @foreach ($rekaps as $rekap)
                                         <tr>
+                                            @if (!isset($rekapPrinted[$rekap->bahan_baku_id]))
+                                                @php $rekapPrinted[$rekap->bahan_baku_id] = true; @endphp
+                                                <td rowspan="{{ $rekapGroupSizes[$rekap->bahan_baku_id] }}"
+                                                    class="text-center font-weight-bold">
+                                                    {{ $rekap->bahanBaku?->material?->material_description ?? '-' }}
+                                                </td>
+                                                <td rowspan="{{ $rekapGroupSizes[$rekap->bahan_baku_id] }}"
+                                                    class="text-right font-weight-bold">
+                                                    {{ $rekap->bahanBaku && $rekap->bahanBaku->jumlah_kg !== null ? number_format((float) $rekap->bahanBaku->jumlah_kg, 2, ',', '.') . ' Kg' : '-' }}
+                                                </td>
+                                            @endif
                                             <td>{{ $rekap->mesin ?? '-' }}</td>
-                                            <td>{{ $rekap->bahanBaku->material->material_description ?? '-' }}</td>
                                             <td>{{ $rekap->waktu_start ? substr($rekap->waktu_start, 0, 5) : '-' }}</td>
                                             <td>{{ $rekap->waktu_stop ? substr($rekap->waktu_stop, 0, 5) : '-' }}</td>
                                             <td class="text-right">

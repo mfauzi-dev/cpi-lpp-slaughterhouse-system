@@ -156,7 +156,7 @@
                                             <div class="action-buttons">
                                                 <a href="{{ route('manager.bahan-baku.detail', [$bahanBaku->id, 'no_po' => $poNumber]) }}"
                                                     class="btn btn-outline-info" title="Lihat Detail">
-                                                    Lihat Detail
+                                                    <i class="fas fa-file-alt"></i> Lihat Detail
                                                 </a>
                                             </div>
                                         </td>

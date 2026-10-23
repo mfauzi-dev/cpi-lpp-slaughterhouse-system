@@ -132,12 +132,12 @@
                                         <div class="action-buttons">
                                             <a href="{{ route('operator.metal-detector.detail', $metalDetector->id) }}"
                                                 class="btn btn-outline-info" title="Detail">
-                                                <i class="fas fa-eye"></i>
+                                                <i class="fas fa-file-alt"></i> Lihat Detail
                                             </a>
 
                                             <a href="{{ route('operator.metal-detector.edit', $metalDetector->id) }}"
                                                 class="btn btn-outline-warning" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                                <i class="fas fa-edit"></i> Edit
                                             </a>
 
                                             <form
@@ -148,7 +148,7 @@
                                                 @method('DELETE')
 
                                                 <button type="submit" class="btn btn-outline-danger" title="Hapus">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fas fa-trash"></i> Delete
                                                 </button>
                                             </form>
                                         </div>

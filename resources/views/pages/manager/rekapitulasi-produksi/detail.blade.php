@@ -78,15 +78,15 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="info-box">
-                                <div class="info-label">No. PO (Bahan Baku)</div>
+                                <div class="info-label">No. PO Bahan Baku</div>
                                 <div class="info-value">
                                     {{ optional($rekapitulasiProduksi->bahanBaku)->no_po ?: '-' }}
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Material Bahan Baku</div>
                                 <div class="info-value">
@@ -97,6 +97,14 @@
                                     @else
                                         -
                                     @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="info-box">
+                                <div class="info-label">Jumlah KG Bahan Baku</div>
+                                <div class="info-value">
+                                    {{ $rekapitulasiProduksi->bahanBaku->jumlah_kg }}
                                 </div>
                             </div>
                         </div>

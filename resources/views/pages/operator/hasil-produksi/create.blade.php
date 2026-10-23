@@ -36,6 +36,7 @@
                     value="{{ old('production_batch_id') }}">
                 <input type="hidden" name="jumlah_kg_bahan_baku" id="jumlah_kg_bahan_baku"
                     value="{{ old('jumlah_kg_bahan_baku') }}">
+                <input type="hidden" name="bahan_baku_id" id="bahan_baku_id" value="{{ old('bahan_baku_id') }}">
 
                 <div class="card mb-4">
                     <div class="card-header">
@@ -259,6 +260,9 @@
                             <select id="yield_bahan_baku_id" class="form-control select2" disabled>
                                 <option value="">Pilih tanggal, shift, dan No. PO terlebih dahulu</option>
                             </select>
+                            @error('bahan_baku_id')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                             <small class="form-text text-muted">Daftar ini mengikuti No. PO bahan baku yang dipilih pada
                                 bagian Informasi Produksi.</small>
                         </div>
@@ -420,6 +424,7 @@
                     .trigger('change.select2');
 
                 $('#jumlah_kg_bahan_baku').val('');
+                $('#bahan_baku_id').val('');
                 recalculatePreview();
             }
 
@@ -560,7 +565,7 @@
                         $('#production-summary').show();
 
                         const yieldSelect = $('#yield_bahan_baku_id');
-                        const selectedOldBahanBaku = @json(old('yield_bahan_baku_id'));
+                        const selectedOldBahanBaku = @json(old('bahan_baku_id'));
 
                         yieldSelect.empty().append(new Option('Pilih Material Bahan Baku', ''));
 
@@ -597,6 +602,7 @@
                         } else {
                             yieldSelect.val('').trigger('change.select2');
                             $('#jumlah_kg_bahan_baku').val('');
+                            $('#bahan_baku_id').val('');
                             recalculatePreview();
                         }
                     },
@@ -613,6 +619,7 @@
 
                 if (selectedId === null || selectedId === '') {
                     $('#jumlah_kg_bahan_baku').val('');
+                    $('#bahan_baku_id').val('');
                     recalculatePreview();
                     return;
                 }
@@ -623,11 +630,13 @@
 
                 if (!selectedMaterial) {
                     $('#jumlah_kg_bahan_baku').val('');
+                    $('#bahan_baku_id').val('');
                     recalculatePreview();
                     return;
                 }
 
                 $('#jumlah_kg_bahan_baku').val(Number(selectedMaterial.jumlah_kg || 0));
+                $('#bahan_baku_id').val(selectedMaterial.id);
                 recalculatePreview();
             });
 
@@ -819,7 +828,7 @@
                     return;
                 }
 
-                if (!$('#yield_bahan_baku_id').val()) {
+                if (!$('#bahan_baku_id').val()) {
                     event.preventDefault();
                     alert('Silakan pilih material bahan baku pada Perhitungan Yield terlebih dahulu.');
                 }

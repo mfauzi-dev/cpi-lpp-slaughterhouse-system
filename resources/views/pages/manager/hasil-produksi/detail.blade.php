@@ -96,6 +96,25 @@
                     </div>
 
                     <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="info-box">
+                                <div class="info-label">Material Bahan Baku</div>
+                                <div class="info-value">
+                                    {{ $hasilProduksi->bahanBaku->material->material_description ?? '-' }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-box">
+                                <div class="info-label">Jumlah KG Bahan Baku</div>
+                                <div class="info-value">
+                                    {{ $hasilProduksi->bahanBaku ? number_format($hasilProduksi->bahanBaku->jumlah_kg, 2, ',', '.') . ' kg' : '-' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-4 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Tanggal Transfer</div>

@@ -68,9 +68,8 @@ class LaporanPengendalianProdukBelakangSheet implements
 
                 $row = 10;
                 $row = $this->buildMetalDetector($sheet, $row);
-                $row = $this->buildLegend($sheet, $row);
 
-                $this->buildApproval($sheet, $row + 2);
+                $this->buildApproval($sheet, $row + 1);
 
                 $lastRow = $sheet->getHighestRow();
 
@@ -298,7 +297,6 @@ class LaporanPengendalianProdukBelakangSheet implements
                 $value = $item->{$statusFields[$i]} ?? null;
 
                 $sheet->setCellValue("{$col}{$row}", $value ?? '-');
-                $this->styleStatusCell($sheet, "{$col}{$row}", $value);
             }
 
             $sheet->setCellValue("M{$row}", $item->in ?? '-');
@@ -310,58 +308,6 @@ class LaporanPengendalianProdukBelakangSheet implements
 
             $row++;
         }
-
-        return $row + 1;
-    }
-
-    protected function styleStatusCell($sheet, string $cell, ?string $value): void
-    {
-        if ($value === 'Terdeteksi') {
-            $sheet->getStyle($cell)
-                ->getFill()
-                ->setFillType(Fill::FILL_SOLID)
-                ->getStartColor()
-                ->setRGB('C6EFCE');
-
-            $sheet->getStyle($cell)
-                ->getFont()
-                ->getColor()
-                ->setRGB('006100');
-        } elseif ($value === 'Tidak terdeteksi') {
-            $sheet->getStyle($cell)
-                ->getFill()
-                ->setFillType(Fill::FILL_SOLID)
-                ->getStartColor()
-                ->setRGB('FFC7CE');
-
-            $sheet->getStyle($cell)
-                ->getFont()
-                ->getColor()
-                ->setRGB('9C0006');
-        }
-    }
-
-    protected function buildLegend($sheet, int $row): int
-    {
-        $sheet->mergeCells("A{$row}:O{$row}");
-        $sheet->setCellValue(
-            "A{$row}",
-            'Keterangan: Hijau = Terdeteksi, Merah = Tidak terdeteksi.'
-        );
-
-        $sheet->getStyle("A{$row}:O{$row}")
-            ->getFont()
-            ->setName('Calibri')
-            ->setItalic(true)
-            ->setSize(12);
-
-        $sheet->getStyle("A{$row}:O{$row}")
-            ->getAlignment()
-            ->setHorizontal(Alignment::HORIZONTAL_LEFT)
-            ->setVertical(Alignment::VERTICAL_CENTER)
-            ->setWrapText(true);
-
-        $sheet->getRowDimension($row)->setRowHeight(28);
 
         return $row + 1;
     }

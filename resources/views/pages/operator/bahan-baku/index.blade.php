@@ -171,7 +171,7 @@
                                             <div class="action-buttons">
                                                 <a href="{{ route('operator.bahan-baku.detail', [$bahanBaku->id, 'no_po' => $poNumber]) }}"
                                                     class="btn btn-outline-info" title="Lihat Detail">
-                                                    <i class="fas fa-eye"></i>
+                                                    <i class="fas fa-file-alt"></i> Lihat Detail
                                                 </a>
                                             </div>
                                         </td>

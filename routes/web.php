@@ -114,6 +114,10 @@ Route::prefix('operator')->middleware(['auth', 'role:Operator'])->group(function
         Route::get('/create', [ProductivityController::class, 'create'])->name('operator.productivity.create');
         Route::post('/store', [ProductivityController::class, 'store'])->name('operator.productivity.store');
 
+        Route::get('/get-po-list', [ProductivityController::class, 'getPoList'])->name('operator.productivity.get-po-list');
+        Route::get('/get-bahan-baku-by-po', [ProductivityController::class, 'getBahanBakuByPo'])->name('operator.productivity.get-bahan-baku-by-po');
+
+
         Route::post('/bulk-destroy', [ProductivityController::class, 'bulkDestroy'])->name('operator.productivity.bulk-destroy');
 
         Route::get('/{id}/edit', [ProductivityController::class, 'edit'])->name('operator.productivity.edit');

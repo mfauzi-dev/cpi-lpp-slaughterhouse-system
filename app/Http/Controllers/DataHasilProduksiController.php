@@ -13,7 +13,7 @@ class DataHasilProduksiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DataHasilProduksi::with(['productionBatch', 'material'])->latest();
+        $query = DataHasilProduksi::with(['productionBatch', 'material', 'bahanBaku'])->latest();
 
         if ($request->filled('date_from')) {
             $query->whereHas('productionBatch', function ($q) use ($request) {
@@ -59,14 +59,6 @@ class DataHasilProduksiController extends Controller
         );
     }
 
-    /**
-     * Daftar No. PO (dari bahan baku) beserta ringkasannya untuk satu
-     * production batch. Dipanggil setelah user memilih shift, untuk mengisi
-     * pilihan "No. PO (Bahan Baku)" di step Informasi Produksi. Pilihan ini
-     * HANYA menentukan Jumlah KG pembagi yield & material yang muncul —
-     * tidak ada hubungannya dengan field no_po/cost_center_name milik
-     * hasil produksi sendiri (itu input manual, lihat store()/update()).
-     */
     public function getPoList(Request $request)
     {
         $request->validate([
@@ -148,6 +140,11 @@ class DataHasilProduksiController extends Controller
                 'integer',
                 'exists:production_batches,id',
             ],
+            'bahan_baku_id' => [
+                'nullable',
+                'integer',
+                'exists:bahan_bakus,id',
+            ],
             'no_po' => ['nullable', 'string', 'max:255'],
             'cost_center_name' => [
                 'nullable',
@@ -187,6 +184,7 @@ class DataHasilProduksiController extends Controller
 
                 DataHasilProduksi::create([
                     'production_batch_id' => $request->production_batch_id,
+                    'bahan_baku_id' => $request->bahan_baku_id,
                     'no_po' => $request->no_po,
                     'cost_center_name' => $request->cost_center_name,
                     'material_id' => $request->material_id,
@@ -222,7 +220,7 @@ class DataHasilProduksiController extends Controller
 
     public function detail($id)
     {
-        $hasilProduksi = DataHasilProduksi::with(['productionBatch', 'material'])->findOrFail($id);
+        $hasilProduksi = DataHasilProduksi::with(['productionBatch', 'material', 'bahanBaku'])->findOrFail($id);
 
         return view(
             'pages.operator.hasil-produksi.detail',
@@ -232,7 +230,7 @@ class DataHasilProduksiController extends Controller
 
     public function edit($id)
     {
-        $hasilProduksi = DataHasilProduksi::with(['productionBatch', 'material'])->findOrFail($id);
+        $hasilProduksi = DataHasilProduksi::with(['productionBatch', 'material', 'bahanBaku'])->findOrFail($id);
 
         $productions = ProductionBatch::withCount('bahanBakus')
             ->withSum('bahanBakus', 'jumlah_kg')
@@ -253,6 +251,11 @@ class DataHasilProduksiController extends Controller
                 'required',
                 'integer',
                 'exists:production_batches,id',
+            ],
+            'bahan_baku_id' => [
+                'nullable',
+                'integer',
+                'exists:bahan_bakus,id',
             ],
             'no_po' => ['nullable', 'string', 'max:255'],
             'cost_center_name' => [
@@ -293,6 +296,7 @@ class DataHasilProduksiController extends Controller
 
         $hasilProduksi->update([
             'production_batch_id' => $request->production_batch_id,
+            'bahan_baku_id' => $request->bahan_baku_id,
             'no_po' => $request->no_po,
             'cost_center_name' => $request->cost_center_name,
             'material_id' => $request->material_id,
@@ -349,7 +353,7 @@ class DataHasilProduksiController extends Controller
 
     public function managerIndex(Request $request)
     {
-        $query = DataHasilProduksi::with(['productionBatch', 'material'])->latest();
+        $query = DataHasilProduksi::with(['productionBatch', 'material', 'bahanBaku'])->latest();
 
         if ($request->filled('date_from')) {
             $query->whereHas('productionBatch', function ($q) use ($request) {
@@ -383,7 +387,7 @@ class DataHasilProduksiController extends Controller
 
     public function managerDetail($id)
     {
-        $hasilProduksi = DataHasilProduksi::with(['productionBatch', 'material'])->findOrFail($id);
+        $hasilProduksi = DataHasilProduksi::with(['productionBatch', 'material', 'bahanBaku'])->findOrFail($id);
 
         return view(
             'pages.manager.hasil-produksi.detail',

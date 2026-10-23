@@ -125,7 +125,7 @@
                                         <div class="action-buttons justify-content-center">
                                             <a href="{{ route('manager.metal-detector.detail', $metalDetector->id) }}"
                                                 class="btn btn-outline-info" title="Detail">
-                                                Lihat Detail
+                                                <i class="fas fa-file-alt"></i> Lihat Detail
                                             </a>
                                         </div>
                                     </td>

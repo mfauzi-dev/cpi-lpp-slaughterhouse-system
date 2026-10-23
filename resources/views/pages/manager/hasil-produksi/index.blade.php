@@ -97,6 +97,8 @@
                                 <th class="text-center" width="70">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Bahan Baku</th>
+                                <th>Total KG</th>
                                 <th>Cost Center Name</th>
                                 <th>No. PO</th>
                                 <th>Nama Product</th>
@@ -117,13 +119,19 @@
                                     <td>
                                         {{ $hasilProduksi->productionBatch?->shift ? 'Shift ' . $hasilProduksi->productionBatch->shift : '-' }}
                                     </td>
+                                    <td>
+                                        {{ $hasilProduksi->bahanBaku->material->material_description }}
+                                    </td>
+                                    <td>
+                                        {{ $hasilProduksi->bahanBaku->jumlah_kg }}
+                                    </td>
                                     <td>{{ $hasilProduksi->cost_center_name ?? '-' }}</td>
                                     <td>{{ $hasilProduksi->no_po ?? '-' }}</td>
                                     <td>{{ $hasilProduksi->material?->material_description ?? '-' }}</td>
                                     <td class="text-center">
                                         <a href="{{ route('manager.hasil-produksi.detail', $hasilProduksi->id) }}"
                                             class="btn btn-outline-info" title="Detail">
-                                            Lihat Detail
+                                            <i class="fas fa-file-alt"></i> Lihat Detail
                                         </a>
                                     </td>
                                 </tr>

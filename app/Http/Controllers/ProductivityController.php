@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BahanBaku;
 use App\Models\Material;
 use App\Models\ProductionBatch;
 use App\Models\Productivity;
@@ -44,6 +45,69 @@ class ProductivityController extends Controller
         );
     }
 
+    public function getPoList(Request $request)
+    {
+        $request->validate([
+            'production_batch_id' => [
+                'required',
+                'integer',
+                'exists:production_batches,id',
+            ],
+        ]);
+
+        $groups = BahanBaku::where('production_batch_id', $request->production_batch_id)
+            ->get(['no_po', 'jumlah_kg'])
+            ->groupBy(fn ($item) => $item->no_po ?? '')
+            ->map(function ($items, $noPo) {
+                return [
+                    'no_po' => $noPo,
+                    'jumlah_produk' => $items->count(),
+                    'total_kg' => $items->sum('jumlah_kg'),
+                ];
+            })
+            ->values();
+
+        return response()->json($groups);
+    }
+
+    public function getBahanBakuByPo(Request $request)
+    {
+        $request->validate([
+            'production_batch_id' => [
+                'required',
+                'integer',
+                'exists:production_batches,id',
+            ],
+            'no_po' => ['present', 'nullable', 'string'],
+        ]);
+
+        $query = BahanBaku::with([
+            'material:id,material_code,material_description',
+        ])->where('production_batch_id', $request->production_batch_id);
+
+        if ($request->input('no_po') === '') {
+            $query->where(function ($q) {
+                $q->whereNull('no_po')
+                    ->orWhere('no_po', '');
+            });
+        } else {
+            $query->where('no_po', $request->no_po);
+        }
+
+        $bahanBakus = $query
+            ->orderBy('id')
+            ->get([
+                'id',
+                'production_batch_id',
+                'no_po',
+                'material_id',
+                'jumlah_bag',
+                'jumlah_kg',
+            ]);
+
+        return response()->json($bahanBakus);
+    }
+
     public function create()
     {
         $productions = ProductionBatch::latest('tanggal')
@@ -65,6 +129,11 @@ class ProductivityController extends Controller
                 'required',
                 'integer',
                 'exists:production_batches,id',
+            ],
+            'bahan_baku_id' => [
+                'nullable',
+                'integer',
+                'exists:bahan_bakus,id',
             ],
             'material_id' => [
                 'required',
@@ -90,6 +159,7 @@ class ProductivityController extends Controller
             DB::transaction(function () use ($request, $productivityIndirect, $productivityDirect) {
                 Productivity::create([
                     'production_batch_id' => $request->production_batch_id,
+                    'bahan_baku_id' => $request->bahan_baku_id,
                     'material_id' => $request->material_id,
                     'worker_indirect' => $request->worker_indirect,
                     'worker_direct' => $request->worker_direct,
@@ -147,6 +217,11 @@ class ProductivityController extends Controller
                 'integer',
                 'exists:production_batches,id',
             ],
+            'bahan_baku_id' => [
+                'nullable',
+                'integer',
+                'exists:bahan_bakus,id',
+            ],
             'material_id' => [
                 'required',
                 'integer',
@@ -170,6 +245,7 @@ class ProductivityController extends Controller
         $productivity = Productivity::findOrFail($id);
         $productivity->update([
             'production_batch_id' => $request->production_batch_id,
+            'bahan_baku_id' => $request->bahan_baku_id,
             'material_id' => $request->material_id,
             'worker_indirect' => $request->worker_indirect,
             'worker_direct' => $request->worker_direct,

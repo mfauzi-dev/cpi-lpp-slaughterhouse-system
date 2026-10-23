@@ -41,7 +41,7 @@ class RekapitulasiProduksi extends Model
     }
 
     public function bahanBaku()
-{
-    return $this->belongsTo(BahanBaku::class, 'bahan_baku_id');
-}
+    {
+        return $this->belongsTo(BahanBaku::class, 'bahan_baku_id');
+    }
 }

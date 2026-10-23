@@ -102,6 +102,8 @@
                                 <th class="text-center" width="60">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Bahan Baku</th>
+                                <th>Total KG</th>
                                 <th>Nama Product</th>
                                 <th class="text-center" width="100">Action</th>
                             </tr>
@@ -125,6 +127,14 @@
                                     </td>
 
                                     <td>
+                                        {{ $productivity->bahanBaku->material->material_description }}
+                                    </td>
+
+                                    <td>
+                                        {{ $productivity->bahanBaku->jumlah_kg }}
+                                    </td>
+
+                                    <td>
                                         {{ $productivity->material?->material_description ?? '-' }}
                                     </td>
 
@@ -132,7 +142,7 @@
                                         <div class="action-buttons justify-content-center">
                                             <a href="{{ route('manager.productivity.detail', $productivity->id) }}"
                                                 class="btn btn-outline-info" title="Detail">
-                                                Lihat Detail
+                                                <i class="fas fa-file-alt"></i> Lihat Detail
                                             </a>
                                         </div>
                                     </td>

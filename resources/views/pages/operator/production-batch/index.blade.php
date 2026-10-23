@@ -170,23 +170,19 @@
 
                                     <td class="text-center">
                                         <div class="action-buttons">
-                                            <a href="#" class="btn btn-outline-danger" title="Export PDF">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
-
                                             <a href="{{ route('operator.production-batch.export', $productionBatch->id) }}"
                                                 class="btn btn-outline-success" title="Export Excel">
-                                                <i class="fas fa-file-excel"></i>
+                                                <i class="fas fa-file-excel"></i> Excel
                                             </a>
 
                                             <a href="{{ route('operator.production-batch.detail', $productionBatch->id) }}"
                                                 class="btn btn-outline-info" title="Lihat Detail">
-                                                <i class="fas fa-eye"></i>
+                                                <i class="fas fa-file-alt"></i> Lihat Detail
                                             </a>
 
                                             <a href="{{ route('operator.production-batch.edit', $productionBatch->id) }}"
                                                 class="btn btn-outline-warning" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                                <i class="fas fa-edit"></i> Edit
                                             </a>
 
                                             <form
@@ -196,7 +192,7 @@
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-outline-danger" title="Hapus"
                                                     onclick="return confirm('Yakin hapus data production batch ini?')">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fas fa-trash"></i> Delete
                                                 </button>
                                             </form>
                                         </div>

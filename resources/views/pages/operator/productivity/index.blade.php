@@ -109,6 +109,8 @@
                                 <th class="text-center" width="60">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Bahan Baku</th>
+                                <th>Total KG</th>
                                 <th>Nama Product</th>
                                 <th class="text-center" width="150">Action</th>
                             </tr>
@@ -127,17 +129,23 @@
                                     <td>
                                         {{ $productivity->productionBatch?->shift ? 'Shift ' . $productivity->productionBatch->shift : '-' }}
                                     </td>
+                                    <td>
+                                        {{ $productivity->bahanBaku->material->material_description }}
+                                    </td>
+                                    <td>
+                                        {{ $productivity->bahanBaku->jumlah_kg }}
+                                    </td>
                                     <td>{{ $productivity->material?->material_description ?? '-' }}</td>
                                     <td class="text-center">
                                         <div class="action-buttons">
                                             <a href="{{ route('operator.productivity.detail', $productivity->id) }}"
                                                 class="btn btn-outline-info" title="Detail">
-                                                <i class="fas fa-eye"></i>
+                                                <i class="fas fa-file-alt"></i> Lihat Detail
                                             </a>
 
                                             <a href="{{ route('operator.productivity.edit', $productivity->id) }}"
                                                 class="btn btn-outline-warning" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                                <i class="fas fa-edit"></i> Hapus
                                             </a>
 
                                             <form action="{{ route('operator.productivity.destroy', $productivity->id) }}"
@@ -146,7 +154,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-outline-danger" title="Hapus">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fas fa-trash"></i> Delete
                                                 </button>
                                             </form>
                                         </div>
@@ -154,7 +162,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5">
+                                    <td colspan="7">
                                         <div class="empty-state">
                                             <i class="fas fa-chart-line d-block"></i>
                                             <div>Belum ada data productivity.</div>

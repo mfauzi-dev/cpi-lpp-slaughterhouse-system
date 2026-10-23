@@ -11,6 +11,7 @@ class Productivity extends Model
 
      protected $fillable = [
         'production_batch_id',
+        'bahan_baku_id',
         'material_id',
         'worker_indirect',
         'worker_direct',
@@ -39,5 +40,10 @@ class Productivity extends Model
     public function material()
     {
         return $this->belongsTo(Material::class);
+    }
+
+    public function bahanBaku()
+    {
+        return $this->belongsTo(BahanBaku::class);
     }
 }
