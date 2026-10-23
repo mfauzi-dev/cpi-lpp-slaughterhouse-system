@@ -136,7 +136,7 @@ class RekapitulasiProduksiController extends Controller
                 'exists:production_batches,id',
             ],
             'bahan_baku_id' => [
-                'nullable',
+                'required',
                 'integer',
                 'exists:bahan_bakus,id',
             ],

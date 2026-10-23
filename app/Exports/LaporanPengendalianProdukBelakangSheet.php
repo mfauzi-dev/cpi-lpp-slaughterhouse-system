@@ -94,7 +94,8 @@ class LaporanPengendalianProdukBelakangSheet implements
             ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
             ->setPaperSize(PageSetup::PAPERSIZE_A4)
             ->setFitToWidth(1)
-            ->setFitToHeight(0);
+            ->setFitToHeight(0)
+            ->setHorizontalCentered(true);
 
         $sheet->getPageMargins()
             ->setTop(0.25)
