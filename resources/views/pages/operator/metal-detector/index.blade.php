@@ -109,6 +109,7 @@
                                 <th class="text-center" width="60">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Conveyor</th>
                                 <th>Nama Product</th>
                                 <th class="text-center" width="150">Action</th>
                             </tr>
@@ -126,6 +127,9 @@
                                     </td>
                                     <td>
                                         {{ $metalDetector->productionBatch?->shift ? 'Shift ' . $metalDetector->productionBatch->shift : '-' }}
+                                    </td>
+                                    <td>
+                                        {{ $metalDetector->productionBatch->conveyor ? $metalDetector->productionBatch->conveyor : '-' }}
                                     </td>
                                     <td>{{ $metalDetector->material?->material_description ?? '-' }}</td>
                                     <td class="text-center">

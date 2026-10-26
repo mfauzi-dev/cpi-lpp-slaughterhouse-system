@@ -431,7 +431,7 @@
 
                         response.forEach(function(batch) {
                             const option = new Option(
-                                'Shift ' + batch.shift,
+                                'Shift ' + batch.shift + ' - Conveyor ' + batch.conveyor,
                                 batch.id
                             );
 

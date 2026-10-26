@@ -22,7 +22,7 @@ class LaporanPengendalianProdukDepanSheet implements
 {
     protected ProductionBatch $productionBatch;
 
-    // Sheet sekarang selebar A:R (18 kolom) karena tabel hasil produksi
+    // Sheet selebar A:R (18 kolom) karena tabel hasil produksi
     // punya Bahan Baku + Total KG di depan.
     protected string $lastCol = 'R';
     protected int $totalCols = 18;
@@ -81,98 +81,6 @@ class LaporanPengendalianProdukDepanSheet implements
                 $row = $this->buildBahanBaku($sheet, $row);
                 $row = $this->buildDataHasilProduksi($sheet, $row);
 
-                // Di-sort per bahan_baku_id supaya baris dengan bahan baku
-                // yang sama berurutan (syarat merge vertikal).
-                $rekapitulasiProduksis = $this->productionBatch->rekapitulasiProduksis
-                    ->sortBy('bahan_baku_id')
-                    ->values();
-
-                $row = $this->buildProcessTable(
-                    $sheet,
-                    $row,
-                    'REKAPITULASI PRODUKSI & MONITORING MESIN',
-                    [
-                        'Bahan Baku',
-                        'Total KG',
-                        'Mesin',
-                        'Waktu Start',
-                        'Waktu Stop',
-                        'Operation Time',
-                        'Speed Kapasitas',
-                        'Aktual',
-                        '% Pencapaian',
-                        'Output Kg',
-                        'Downtime',
-                        'Penyebab Downtime',
-                        'Tindakan Perbaikan',
-                        'PIC/Operator',
-                    ],
-                    $rekapitulasiProduksis
-                        ->map(fn ($item) => [
-                            $item->bahanBaku?->material?->material_description ?? '-',
-                            $item->bahanBaku
-                                ? $this->number($item->bahanBaku->jumlah_kg) . ' Kg'
-                                : '-',
-                            $item->mesin ?? '-',
-                            $this->time($item->waktu_start),
-                            $this->time($item->waktu_stop),
-                            $this->number($item->operation_time),
-                            $this->number($item->speed_kapasitas),
-                            $this->number($item->aktual),
-                            $this->number($item->persen_pencapaian) . ' %',
-                            $this->number($item->output_kg),
-                            $this->number($item->downtime),
-                            $item->penyebab_downtime ?? '-',
-                            $item->tindakan_perbaikan ?? '-',
-                            $item->pic_operator ?? '-',
-                        ])
-                        ->values()
-                        ->all(),
-                    [0, 1],
-                    $rekapitulasiProduksis->pluck('bahan_baku_id')->values()->all()
-                );
-
-                $productivities = $this->productionBatch->productivities
-                    ->sortBy('bahan_baku_id')
-                    ->values();
-
-                $row = $this->buildProcessTable(
-                    $sheet,
-                    $row,
-                    'PRODUCTIVITY',
-                    [
-                        'Bahan Baku',
-                        'Total KG',
-                        'Material',
-                        'Worker Indirect',
-                        'Worker Direct',
-                        'Worker Total',
-                        'Total Weight',
-                        'Total Time',
-                        'Productivity Indirect',
-                        'Productivity Direct',
-                    ],
-                    $productivities
-                        ->map(fn ($item) => [
-                            $item->bahanBaku?->material?->material_description ?? '-',
-                            $item->bahanBaku
-                                ? $this->number($item->bahanBaku->jumlah_kg) . ' Kg'
-                                : '-',
-                            $item->material?->material_description ?? '-',
-                            $item->worker_indirect ?? '-',
-                            $item->worker_direct ?? '-',
-                            $item->worker_total ?? '-',
-                            $this->number($item->total_weight),
-                            $this->number($item->total_time),
-                            $this->number($item->productivity_indirect),
-                            $this->number($item->productivity_direct),
-                        ])
-                        ->values()
-                        ->all(),
-                    [0, 1],
-                    $productivities->pluck('bahan_baku_id')->values()->all()
-                );
-
                 $this->buildApproval($sheet, $row);
 
                 $lastRow = $sheet->getHighestRow();
@@ -184,6 +92,11 @@ class LaporanPengendalianProdukDepanSheet implements
 
                 $sheet->getDefaultRowDimension()->setRowHeight(28);
                 $sheet->setShowGridlines(false);
+
+                // Print area eksplisit biar fit-to-width tidak menghitung
+                // ruang kosong di luar tabel saat halaman di-center.
+                $sheet->getPageSetup()
+                    ->setPrintArea("A1:{$this->lastCol}{$lastRow}");
             },
         ];
     }
@@ -198,12 +111,12 @@ class LaporanPengendalianProdukDepanSheet implements
             ->setFitToWidth(1)
             ->setFitToHeight(0)
             ->setHorizontalCentered(true);
-            
+
         $sheet->getPageMargins()
             ->setTop(0.25)
-            ->setRight(0.2)
+            ->setRight(0.15)
             ->setBottom(0.25)
-            ->setLeft(0.2);
+            ->setLeft(0.15);
 
         $sheet->getSheetView()->setZoomScale(75);
     }
@@ -466,7 +379,7 @@ class LaporanPengendalianProdukDepanSheet implements
     }
 
     /**
-     * Render tabel proses generik (Hasil Produksi, Rekapitulasi, Productivity).
+     * Render tabel proses generik (dipakai Data Hasil Produksi).
      *
      * $mergeColumns: index kolom (0-based) yang di-merge vertikal untuk baris
      * berurutan dengan key yang sama.

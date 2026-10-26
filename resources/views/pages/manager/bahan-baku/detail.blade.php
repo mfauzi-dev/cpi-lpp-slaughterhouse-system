@@ -58,7 +58,7 @@
                                     {{ $production->tanggal ? \Carbon\Carbon::parse($production->tanggal)->format('d M Y') : '-' }}
                                 </div>
                                 <div class="batch-product">
-                                    Shift {{ $production->shift ?? '-' }}
+                                    Shift {{ $production->shift ?? '-' }} - Conveyor {{ $production->conveyor }}
                                 </div>
                             </div>
 

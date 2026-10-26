@@ -75,13 +75,23 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <div class="info-box">
+                                <div class="info-label">Conveyor</div>
+                                <div class="info-value">
+                                    {{ $metalDetector->productionBatch->conveyor ?? '-' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="info-box">
                                 <div class="info-label">Nama Product</div>
                                 <div class="info-value">
                                     {{ $metalDetector->material->material_description ?? '-' }}
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Kode Product</div>
                                 <div class="info-value">
@@ -89,7 +99,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <div class="info-box">
                                 <div class="info-label">No Program</div>
                                 <div class="info-value">
@@ -97,7 +107,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Pukul</div>
                                 <div class="info-value">

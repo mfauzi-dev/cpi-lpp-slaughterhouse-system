@@ -102,6 +102,7 @@
                                 <th class="text-center">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Conveyor</th>
                                 <th>Cost Center Name</th>
                                 <th>No. PO</th>
                                 <th>Jumlah Produk</th>
@@ -127,6 +128,12 @@
                                         <td>
                                             <span class="badge-soft">
                                                 {{ $bahanBaku->shift ? 'Shift ' . $bahanBaku->shift : '-' }}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="badge-soft">
+                                                {{ $bahanBaku->conveyor ? $bahanBaku->conveyor : '-' }}
                                             </span>
                                         </td>
 

@@ -18,6 +18,7 @@ class ProductionBatchController extends Controller
                 'id',
                 'tanggal',
                 'shift',
+                'conveyor',
                 'tanggal_transfer',
                 'tanggal_proses',
             ]);

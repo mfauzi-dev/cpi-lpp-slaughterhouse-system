@@ -121,6 +121,7 @@
                                 <th class="text-center">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Conveyor</th>
                                 <th>Tanggal Transfer</th>
                                 <th>Tanggal Proses</th>
                                 <th class="text-center">Action</th>
@@ -146,6 +147,16 @@
                                         @if ($productionBatch->shift)
                                             <span class="badge-soft">
                                                 Shift {{ $productionBatch->shift }}
+                                            </span>
+                                        @else
+                                            <span class="value-empty">-</span>
+                                        @endif
+                                    </td>
+
+                                    <td>
+                                        @if ($productionBatch->conveyor)
+                                            <span class="badge-soft">
+                                                {{ $productionBatch->conveyor }}
                                             </span>
                                         @else
                                             <span class="value-empty">-</span>

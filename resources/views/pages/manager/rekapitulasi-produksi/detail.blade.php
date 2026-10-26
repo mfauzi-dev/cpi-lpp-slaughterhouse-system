@@ -34,7 +34,8 @@
                             <div class="col-md-8">
                                 <div class="batch-label">Production Batch</div>
                                 <div class="batch-number">
-                                    Shift {{ $rekapitulasiProduksi->productionBatch->shift ?? '-' }}
+                                    Shift {{ $rekapitulasiProduksi->productionBatch->shift ?? '-' }} - Conveyor
+                                    {{ $rekapitulasiProduksi->productionBatch->conveyor }}
                                 </div>
                                 <div class="batch-product">
                                     Mesin: {{ $rekapitulasiProduksi->mesin ?? '-' }}

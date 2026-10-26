@@ -49,30 +49,43 @@
                         </div>
                     </div>
 
+
                     <div class="row">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Tanggal Produksi</div>
                                 <div class="info-value">
-                                    {{ $hasilProduksi->productionBatch?->tanggal
+                                    {{ optional($hasilProduksi->productionBatch)->tanggal
                                         ? \Carbon\Carbon::parse($hasilProduksi->productionBatch->tanggal)->format('d M Y')
                                         : '-' }}
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Shift</div>
                                 <div class="info-value">{{ $hasilProduksi->productionBatch->shift ?? '-' }}</div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <div class="info-box">
+                                <div class="info-label">Conveyor</div>
+                                <div class="info-value">{{ $hasilProduksi->productionBatch->conveyor ?? '-' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <div class="info-box">
                                 <div class="info-label">No. PO</div>
                                 <div class="info-value">{{ $hasilProduksi->no_po ?? '-' }}</div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <div class="info-box">
+                                <div class="info-label">Cost Center Name</div>
+                                <div class="info-value">{{ $hasilProduksi->cost_center_name }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Absen Worker</div>
                                 <div class="info-value">{{ $hasilProduksi->productionBatch->absen_worker ?? '-' }}</div>
@@ -115,33 +128,29 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Tanggal Transfer</div>
                                 <div class="info-value">
-                                    {{ $hasilProduksi->productionBatch?->tanggal_transfer
+                                    {{ optional($hasilProduksi->productionBatch)->tanggal_transfer
                                         ? \Carbon\Carbon::parse($hasilProduksi->productionBatch->tanggal_transfer)->format('d M Y')
                                         : '-' }}
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Tanggal Proses</div>
                                 <div class="info-value">
-                                    {{ $hasilProduksi->productionBatch?->tanggal_proses
+                                    {{ optional($hasilProduksi->productionBatch)->tanggal_proses
                                         ? \Carbon\Carbon::parse($hasilProduksi->productionBatch->tanggal_proses)->format('d M Y')
                                         : '-' }}
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="info-box">
-                                <div class="info-label">Cost Center Name</div>
-                                <div class="info-value">{{ $hasilProduksi->cost_center_name ?? '-' }}</div>
-                            </div>
-                        </div>
                     </div>
+
+
                 </div>
             </div>
 

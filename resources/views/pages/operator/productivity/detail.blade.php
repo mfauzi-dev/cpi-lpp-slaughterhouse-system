@@ -34,7 +34,8 @@
                             <div class="col-md-8">
                                 <div class="batch-label">Production Batch</div>
                                 <div class="batch-number">
-                                    Shift {{ $productivity->productionBatch->shift ?? '-' }}
+                                    Shift {{ $productivity->productionBatch->shift ?? '-' }} - Conveyor
+                                    {{ $productivity->productionBatch->conveyor }}
                                 </div>
                                 <div class="batch-product">
                                     Product:
@@ -75,15 +76,24 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <div class="info-box">
+                                <div class="info-label">Conveyor</div>
+                                <div class="info-value">
+                                    {{ $productivity->productionBatch->conveyor ?? '-' }}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="info-box">
                                 <div class="info-label">Nama Product</div>
                                 <div class="info-value">
                                     {{ $productivity->material->material_description ?? '-' }}
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Material Bahan Baku</div>
                                 <div class="info-value">
@@ -91,7 +101,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="info-box">
                                 <div class="info-label">Jumlah KG Bahan Baku</div>
                                 <div class="info-value">

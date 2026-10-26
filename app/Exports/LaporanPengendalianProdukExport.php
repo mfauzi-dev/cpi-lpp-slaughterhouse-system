@@ -28,6 +28,7 @@ class LaporanPengendalianProdukExport implements WithMultipleSheets
     {
         return [
             new LaporanPengendalianProdukDepanSheet($this->productionBatch),
+            new LaporanPengendalianProdukTengahSheet($this->productionBatch),
             new LaporanPengendalianProdukBelakangSheet($this->productionBatch),
         ];
     }

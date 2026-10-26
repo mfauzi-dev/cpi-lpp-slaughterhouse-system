@@ -109,6 +109,7 @@
                                 <th class="text-center" width="60">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Conveyor</th>
                                 <th>Bahan Baku</th>
                                 <th>Total KG</th>
                                 <th>Nama Product</th>
@@ -130,6 +131,9 @@
                                         {{ $productivity->productionBatch?->shift ? 'Shift ' . $productivity->productionBatch->shift : '-' }}
                                     </td>
                                     <td>
+                                        {{ $productivity->productionBatch?->conveyor ? $productivity->productionBatch->conveyor : '-' }}
+                                    </td>
+                                    <td>
                                         {{ $productivity->bahanBaku->material->material_description }}
                                     </td>
                                     <td>
@@ -145,7 +149,7 @@
 
                                             <a href="{{ route('operator.productivity.edit', $productivity->id) }}"
                                                 class="btn btn-outline-warning" title="Edit">
-                                                <i class="fas fa-edit"></i> Hapus
+                                                <i class="fas fa-edit"></i> Edit
                                             </a>
 
                                             <form action="{{ route('operator.productivity.destroy', $productivity->id) }}"

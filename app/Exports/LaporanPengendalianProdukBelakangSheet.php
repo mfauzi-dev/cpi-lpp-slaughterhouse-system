@@ -84,6 +84,11 @@ class LaporanPengendalianProdukBelakangSheet implements
 
                 $sheet->getDefaultRowDimension()->setRowHeight(25);
                 $sheet->setShowGridlines(false);
+
+                // Print area eksplisit biar fit-to-width tidak menghitung
+                // ruang kosong di luar tabel saat halaman di-center.
+                $sheet->getPageSetup()
+                    ->setPrintArea("A1:O{$lastRow}");
             },
         ];
     }
@@ -99,9 +104,9 @@ class LaporanPengendalianProdukBelakangSheet implements
 
         $sheet->getPageMargins()
             ->setTop(0.25)
-            ->setRight(0.2)
+            ->setRight(0.15)
             ->setBottom(0.25)
-            ->setLeft(0.2);
+            ->setLeft(0.15);
 
         $sheet->getSheetView()->setZoomScale(75);
     }

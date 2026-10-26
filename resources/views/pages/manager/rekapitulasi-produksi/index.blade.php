@@ -102,6 +102,7 @@
                                 <th class="text-center" width="60">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Conveyor</th>
                                 <th>Bahan Baku</th>
                                 <th>Total KG</th>
                                 <th>Mesin</th>
@@ -126,6 +127,10 @@
                                         {{ $rekapitulasiProduksi->productionBatch?->shift
                                             ? 'Shift ' . $rekapitulasiProduksi->productionBatch->shift
                                             : '-' }}
+                                    </td>
+
+                                    <td>
+                                        {{ $rekapitulasiProduksi->productionBatch?->conveyor ? $rekapitulasiProduksi->productionBatch->conveyor : '-' }}
                                     </td>
 
                                     <td>

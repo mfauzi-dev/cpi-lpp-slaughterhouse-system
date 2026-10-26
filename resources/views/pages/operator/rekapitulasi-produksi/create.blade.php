@@ -358,7 +358,8 @@
                         response.forEach(function(batch) {
                             shiftSelect.append(
                                 new Option(
-                                    'Shift ' + batch.shift,
+                                    'Shift ' + batch.shift + ' - Conveyor ' + batch
+                                    .conveyor,
                                     batch.id,
                                     false,
                                     String(batch.id) === String(selectedBatchId)

@@ -97,6 +97,7 @@
                                 <th class="text-center" width="70">No</th>
                                 <th>Tanggal</th>
                                 <th>Shift</th>
+                                <th>Conveyor</th>
                                 <th>Bahan Baku</th>
                                 <th>Total KG</th>
                                 <th>Cost Center Name</th>
@@ -118,6 +119,9 @@
                                     </td>
                                     <td>
                                         {{ $hasilProduksi->productionBatch?->shift ? 'Shift ' . $hasilProduksi->productionBatch->shift : '-' }}
+                                    </td>
+                                    <td>
+                                        {{ $hasilProduksi->productionBatch?->conveyor ? $hasilProduksi->productionBatch->conveyor : '-' }}
                                     </td>
                                     <td>
                                         {{ $hasilProduksi->bahanBaku->material->material_description }}

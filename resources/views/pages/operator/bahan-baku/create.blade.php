@@ -411,7 +411,9 @@
                         }
 
                         response.forEach(function(batch) {
-                            const option = new Option(`Shift ${batch.shift}`, batch
+                            const option = new Option(
+                                `Shift ${batch.shift} - Conveyor ${batch.conveyor}`,
+                                batch
                                 .shift);
 
                             $(option).attr('data-batch-id', batch.id);

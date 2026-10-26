@@ -34,7 +34,8 @@
                             <div class="col-md-8">
                                 <div class="batch-label">Production Batch</div>
                                 <div class="batch-number">
-                                    Shift {{ $productivity->productionBatch?->shift ?? '-' }}
+                                    Shift {{ $productivity->productionBatch?->shift ?? '-' }} - Conveyor
+                                    {{ $productivity->productionBatch->conveyor }}
                                 </div>
                                 <div class="batch-product">
                                     Product:
