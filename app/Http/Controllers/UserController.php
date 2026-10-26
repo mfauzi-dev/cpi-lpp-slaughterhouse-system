@@ -58,15 +58,11 @@ class UserController extends Controller
             'role_id'  => ['required', 'exists:roles,id'],
         ]);
 
-        $role = Role::where('id', $request->role_id)
-            ->where('name', 'operator')
-            ->firstOrFail();
-
         User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role_id'  => $role->id,
+            'role_id'  => $request->role_id,
         ]);
 
         return redirect()
