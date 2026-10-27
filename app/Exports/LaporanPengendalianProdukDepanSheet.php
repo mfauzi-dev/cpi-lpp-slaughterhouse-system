@@ -108,15 +108,18 @@ class LaporanPengendalianProdukDepanSheet implements
         $pageSetup
             ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
             ->setPaperSize(PageSetup::PAPERSIZE_A4)
+            ->setFitToPage(true)
             ->setFitToWidth(1)
-            ->setFitToHeight(0)
-            ->setHorizontalCentered(true);
+            ->setFitToHeight(1)
+            ->setHorizontalCentered(true)
+            ->setVerticalCentered(true);
+
 
         $sheet->getPageMargins()
-            ->setTop(0.25)
-            ->setRight(0.15)
-            ->setBottom(0.25)
-            ->setLeft(0.15);
+            ->setTop(0.04)
+            ->setRight(0.02)
+            ->setBottom(0.04)
+            ->setLeft(0.02);
 
         $sheet->getSheetView()->setZoomScale(75);
     }
